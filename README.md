@@ -1,1 +1,3 @@
 # Social-server
+
+npm start

@@ -23,10 +23,10 @@ class authController {
       if (!errors.isEmpty()) {
         return res
           .status(400)
-          .json({ message: "Ошибка при регистрации", errors });
+          .json({ message: errors.errors[0].msg, errors });
       }
 
-      const { username, password } = req.body;
+      const { username, email, password } = req.body;
       const candidate = await User.findOne({ username }); //ищем пользователя с этим юзернеймом
       if (candidate) {
         return res.status(400).json({ message: "Пользователь уже существует" });
@@ -39,6 +39,7 @@ class authController {
       const user = new User({
         username,
         password: hashPassword,
+        email,
         roles: [userRole.value],
       }); //создаем пользователя
 
@@ -59,17 +60,17 @@ class authController {
 
       const user = await User.findOne({ username }); // ищем юзера
       if (!user) {
-       return res.status(400).json({ message: "Пользователь не найден" });
+       return res.status(400).json({ message: "User not found" });
       }
 
       const validPassword = bcrypt.compareSync(password, user.password); //валидация введенного пароля
       if (!validPassword) {
-        return res.status(400).json({ message: "Пароль не верный" });
+        return res.status(400).json({ message: "Password incorrect" });
       }
       
 
       const token = generateAccessToken(user._id, user.roles); // _id монго генерирует сам
-      return res.json({token})
+      return res.json({token, email: user.email, roles: user.roles, username: user.username})
 
     } catch (e) {
       console.log(e);
@@ -77,7 +78,17 @@ class authController {
     }
   }
 
+  async me(req, res) {
+    try {
+      const { user } = req.params;
   
+      const userData = await User.findOne({ username: user })
+      return res.status(200).json({username: userData.username, role: userData.roles[0]})
+
+    } catch (e) {
+      return res.status(403).json({ message: "You are not autorized" });
+    }
+  }
 
   async getUsers(req, res) {
     try {

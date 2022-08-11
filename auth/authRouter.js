@@ -12,6 +12,7 @@ check("password", " Пароль должен быть больше 4 и мен�
   controller.registration
 );
 router.post("/login", controller.login);
+router.get("/me/:user", authMiddleware, controller.me);
 // router.get("/users", authMiddleware,  controller.getUsers); //todo добавляем мидлварю чтоб только зареганый юзер мог сделать такой запрос
 router.get("/users", roleMiddleware(['ADMIN', 'User']),  controller.getUsers); //todo добавляем мидлварю чтоб только юзер с указанной ролью мог сделать такой запрос
 
