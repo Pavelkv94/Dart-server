@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const authRouter = require("./auth/authRouter");
-const ProfileRouter = require("./routes/profileRoutes");
+const authRouter = require("./routes/authRouter");
+const ProfileRouter = require("./routes/profileRouter");
 
 require("dotenv").config();
 
@@ -30,11 +30,13 @@ db.once("open", function () {
 
 const server = express();
 
-// server.use(cors({ origin: "http://localhost:3000" }))
-server.use(cors({ origin: "*" })); //!------CORS DANGER
+//todo server.use(cors({ origin: "http://localhost:3000" }))
+server.use(cors({ origin: "*" })); //!------CORS DANGER ==> ./corsMiddleware.js
+
+server.use('/storage', express.static('storage')) //публичная папка(статика)
 
 server.use(express.json());
-server.use(ProfileRouter);
+server.use("/profile",ProfileRouter);
 server.use("/auth", authRouter);
 server.use(
     express.static("public", {
