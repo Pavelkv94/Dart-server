@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const authRouter = require("./auth/authRouter");
+const ProfileRouter = require("./routes/profileRoutes");
 
 require("dotenv").config();
 
@@ -33,7 +34,7 @@ const server = express();
 server.use(cors({ origin: "*" })); //!------CORS DANGER
 
 server.use(express.json());
-//server.use(Router);
+server.use(ProfileRouter);
 server.use("/auth", authRouter);
 server.use(
     express.static("public", {

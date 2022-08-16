@@ -1,10 +1,11 @@
-const User = require("../models/User");
+const UserAuth = require("../models/UserAuth");
 const Role = require("../models/Role");
 const bcrypt = require("bcryptjs"); //хэширование пароля
 const { validationResult } = require("express-validator"); //для получения сообщений об ошибках
 const jwt = require("jsonwebtoken"); //для работы с jwt
 const { secret } = require("../config"); // получаем секретный ключ
 const { v1 } = require("uuid");
+const UserProfile = require("../models/UserProfile");
 
 //создаем функцию которая принимает ИД и роль и засовываем эт овсе в обьект пайлоад
 const generateAccessToken = (id, roles) => {
@@ -25,7 +26,7 @@ class authController {
             }
 
             const { email, password } = req.body;
-            const candidate = await User.findOne({ email }); //ищем пользователя с этим email
+            const candidate = await UserAuth.findOne({ email }); //ищем пользователя с этим email
             if (candidate) {
                 return res.status(400).json({ message: "Пользователь уже существует" });
             }
@@ -33,15 +34,39 @@ class authController {
             var hashPassword = bcrypt.hashSync(password, 7); //Хэшируем пароль
 
             const userRole = await Role.findOne({ value: "User" }); //присваиваем роль Юзера
-
-            const user = new User({
-                user_id: v1(),
+            const uniqueId = v1();
+            const user = new UserAuth({
+                user_id: uniqueId,
                 password: hashPassword,
                 email,
                 roles: [userRole.value],
             }); //создаем пользователя
 
+            const userProfile = new UserProfile({
+                user_id: uniqueId,
+                email,
+                first_name: "Pavel",
+                last_name: "Kazlou",
+                status: "This is status!",
+                photo: "https://android-obzor.com/wp-content/uploads/2022/03/1-31.jpg",
+                background: "https://www.nsbpictures.com/wp-content/uploads/2020/04/sunset-hd-background-photos-12-scaled.jpg",
+                country: "Belarus, Minsk",
+                birthday: "02/17/1994",
+                contacts: {
+                    facebook: "facebook.com",
+                    youtube: "youtube.com",
+                    vk: "vk.com",
+                    instagram: "",
+                    linkedin: "",
+                    twitter: "",
+                    telegram: "",
+                },
+                about: "Hello I'm pavel. Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a.",
+                created_at: new Date()
+            });
+
             await user.save(); //сохраняем в БД
+            await userProfile.save(); //сохраняем в БД
 
             return res.json({ message: "Пользователь зарегестрирован" }); //мессадж
         } catch (e) {
@@ -54,7 +79,7 @@ class authController {
         try {
             const { email, password } = req.body; //получаем данные
 
-            const user = await User.findOne({ email }); // ищем юзера
+            const user = await UserAuth.findOne({ email }); // ищем юзера
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
@@ -76,8 +101,8 @@ class authController {
         try {
             const { user_id } = req.params;
 
-            const userData = await User.findOne({ user_id });
-            return res.status(200).json({ email: userData.email, role: userData.roles[0], user_id: userData.user_id });
+            const userData = await UserAuth.findOne({ user_id });
+            return res.status(200).json({ email: userData.email, roles: userData.roles, user_id: userData.user_id });
         } catch (e) {
             return res.status(403).json({ message: "You are not autorized" });
         }
@@ -91,7 +116,7 @@ class authController {
             // await userRole.save();
             // await adminRole.save()
 
-            const users = await User.find(); //получаем юзеров
+            const users = await UserAuth.find(); //получаем юзеров
             res.json(users);
         } catch (e) {
             console.log(e);
