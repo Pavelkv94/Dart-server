@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const authRouter = require("./routes/authRouter");
 const ProfileRouter = require("./routes/profileRouter");
+const outDataRouter = require("./routes/outDataRouter");
 
 require("dotenv").config();
 
@@ -38,6 +39,7 @@ server.use('/storage', express.static('storage')) //публичная папк�
 server.use(express.json());
 server.use("/profile",ProfileRouter);
 server.use("/auth", authRouter);
+server.use("/weather", outDataRouter);
 server.use(
     express.static("public", {
         setHeaders: function setHeaders(res, path, stat) {
@@ -47,7 +49,6 @@ server.use(
         },
     })
 );
-
 
 const start = async () => {
   try {
