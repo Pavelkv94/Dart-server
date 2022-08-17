@@ -11,9 +11,7 @@ router.use(fileupload());
 
 
 router.get("/user/:user_id", authMiddleware, profileController.getProfile);
-
-
-// router.post('/upload', authMiddleware, fileController.createDir)
-router.post('/upload', authMiddleware, fileController.uploadFile)
+router.post('/upload', authMiddleware, fileController.uploadFile);
+router.put('/changeBackground', authMiddleware, profileController.changeBackground)
 
 module.exports = router;

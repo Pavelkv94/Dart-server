@@ -1,3 +1,4 @@
+const UserAuth = require("../models/UserAuth");
 const UserProfile = require("../models/UserProfile");
 
 class ProfileController {
@@ -7,8 +8,19 @@ class ProfileController {
                 if (err) return res.status(400).json({ err });
                 res.json(data);
             });
+            
         } catch (e) {
             console.log(e);
+        }
+    }
+    async changeBackground(req, res) {
+        try {
+            const user = await UserAuth.findById(req.user.id);
+            await UserProfile.findOneAndUpdate({user_id: user.user_id}, { background: req.body.url});
+
+            return res.json({ image: req.body.url }); //мессадж
+        } catch (e) {
+            console.log(e)
         }
     }
 }

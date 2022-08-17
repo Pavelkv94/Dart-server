@@ -34,13 +34,28 @@ class FileController {
             const file = req.files.image
 
             const user = await UserAuth.findById(req.user.id);
-            await UserProfile.findOneAndUpdate({user_id: user.user_id}, { photo: `/storage/${file.name}`});
+            await UserProfile.findOneAndUpdate({user_id: user.user_id}, { photo: `/storage/${user.user_id}${file.name.slice(-4)}`});
 
-            let path =`./storage/${file.name}`
+            const oldFile = await File.findOne({user: user.user_id});
+
+            if(oldFile) {
+                const oldFilePath = oldFile?.path.slice(1);
+                fs.unlink(oldFilePath, (err) => {
+                    if (err) {
+                    console.error(err)
+                    return
+                    }})
+            }
+           
+
+            await File.findOneAndDelete({user: user.user_id})
+
+            let path =`./storage/${user.user_id}${file.name.slice(-4)}`
 
             if (fs.existsSync(path)) {
                 return res.status(400).json({message: 'File already exist'})
             }
+
             file.mv(path)
 
             const type = file.name.split('.').pop()
@@ -48,7 +63,7 @@ class FileController {
                 name: file.name,
                 type,
                 size: file.size,
-                path: `/storage/${file.name}`,
+                path: `/storage/${user.user_id}${file.name.slice(-4)}`,
                 user: user.user_id
             })
 
