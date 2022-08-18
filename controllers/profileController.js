@@ -11,6 +11,7 @@ class ProfileController {
             
         } catch (e) {
             console.log(e);
+            res.status(500).json({ message: "Server Error with getProfile" });
         }
     }
     async changeBackground(req, res) {
@@ -21,6 +22,7 @@ class ProfileController {
             return res.json({ image: req.body.url }); //мессадж
         } catch (e) {
             console.log(e)
+            res.status(500).json({ message: "Server Error with change background" });
         }
     }
 }

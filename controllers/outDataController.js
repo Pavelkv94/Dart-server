@@ -12,6 +12,7 @@ class OutDataController {
                 return res.json(weather);
         } catch (e) {
             console.log(e);
+            res.status(400).json({ message: "Weather service is unavailable" });
         }
     }
 }
