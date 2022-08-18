@@ -7,7 +7,7 @@ user_id: {type: String},
 userAvatar: {type:String},
 created_at: { type: String },
 text: {type: String},
-likes: {type: Number},
+likes: {type: Array},
 comments: {type: Array, ref: "Comment"}
 
 });
