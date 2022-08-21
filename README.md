@@ -1,3 +1,3 @@
 # Social-server
 
-npm start
+npm run start
