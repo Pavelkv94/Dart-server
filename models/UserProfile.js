@@ -13,6 +13,7 @@ const UserProfile = new Schema({
     contacts: { type: Object, ref: "Contacts" },
     about: { type: String },
     created_at: { type: String },
+    friends: {type: [String]}
 });
 
 module.exports = model("UserProfile", UserProfile);

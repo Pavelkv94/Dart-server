@@ -6,8 +6,9 @@ const Comment = new Schema({
     userAvatar: {type:String},
     message: {type: String},
     created_at: { type: String },
-    likes: {type: Number},
+    likes: {type: Array},
     post_id: { type: String },
+    comment_id: {type: String}
 });
 
 module.exports = model('Comment', Comment)

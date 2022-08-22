@@ -5,6 +5,7 @@ const authRouter = require("./routes/authRouter");
 const ProfileRouter = require("./routes/profileRouter");
 const outDataRouter = require("./routes/outDataRouter");
 const postsRouter = require("./routes/postsRouter");
+const usersRouter = require("./routes/usersRouter");
 
 require("dotenv").config();
 
@@ -42,6 +43,7 @@ server.use("/profile",ProfileRouter);
 server.use("/auth", authRouter);
 server.use("/weather", outDataRouter);
 server.use("/posts", postsRouter);
+server.use("/users", usersRouter);
 server.use(
     express.static("public", {
         setHeaders: function setHeaders(res, path, stat) {

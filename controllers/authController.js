@@ -45,11 +45,11 @@ class authController {
             const userProfile = new UserProfile({
                 user_id: uniqueId,
                 email,
-                first_name: "Pavel",
-                last_name: "Kazlou",
+                first_name: "John",
+                last_name: "Doe",
                 status: "This is status!",
-                photo: "https://android-obzor.com/wp-content/uploads/2022/03/1-31.jpg",
-                background: "https://www.nsbpictures.com/wp-content/uploads/2020/04/sunset-hd-background-photos-12-scaled.jpg",
+                photo: "",
+                background: "https://wallpaper.dog/large/17198193.jpg",
                 country: "Belarus, Minsk",
                 birthday: "02/17/1994",
                 contacts: {
@@ -61,8 +61,9 @@ class authController {
                     twitter: "https://www.twitter.com/",
                     telegram: "https://t.me/",
                 },
-                about: "Hello I'm pavel. Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a.",
-                created_at: new Date()
+                about: "Tell about youself",
+                created_at: new Date(),
+                friends: []
             });
 
             await user.save(); //сохраняем в БД
@@ -102,7 +103,7 @@ class authController {
             const { user_id } = req.params;
 
             const userData = await UserAuth.findOne({ user_id });
-            return res.status(200).json({ email: userData.email, roles: userData.roles, user_id: userData.user_id });
+            return res.status(200).json({ email: userData.email, roles: userData.roles, user_id: userData.user_id, _id: userData._id });
         } catch (e) {
             return res.status(403).json({ message: "You are not autorized" });
         }

@@ -1,3 +1,4 @@
+const { v1 } = require("uuid");
 const Post = require("../models/Post");
 const UserAuth = require("../models/UserAuth");
 
@@ -29,7 +30,7 @@ class PostsController {
     async addComment(req, res) {
         try {
             const date = new Date();
-            await Post.findOneAndUpdate({ _id: req.body.post_id }, { $push: { comments: { ...req.body, created_at: `${date.toLocaleDateString()} ${date.toLocaleTimeString()}` } } });
+            await Post.findOneAndUpdate({ _id: req.body.post_id }, { $push: { comments: { ...req.body, created_at: `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`, comment_id: v1() } } });
 
             return res.json(req.body);
         } catch (e) {
@@ -38,14 +39,34 @@ class PostsController {
         }
     }
 
-    async addLike(req, res) {
+    async addPostLike(req, res) {
         try {
             await Post.findOneAndUpdate({ _id: req.body.post_id }, { $push: { likes: req.body.user_id } });
 
             return res.json(req.body);
         } catch (e) {
             console.log(e);
+            res.status(500).json({ message: "Server Error with add Post Like" });
+        }
+    }
+
+    async removePostLike(req, res) {
+        try {
+            await Post.findOneAndUpdate({ _id: req.body.post_id }, { $pull: { likes: req.body.user_id } });
+            return res.json(req.body);
+        } catch (e) {
+            console.log(e);
             res.status(500).json({ message: "Server Error with add Like" });
+        }
+    }
+
+    async addCommentLike(req, res) {
+        try {
+            await Post.findOne({ _id: req.body.post_id}) //, { $push: { "comments.$.likes": req.body.user_id } });
+            return res.json(req.body);
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({ message: "Server Error with add Comment Like" });
         }
     }
 }
