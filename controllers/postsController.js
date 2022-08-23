@@ -18,7 +18,7 @@ class PostsController {
     }
     async getPosts(req, res) {
         try {
-            const posts = await Post.find({ user_id: req.params.user_id });
+            const posts = req.params.user_id === "all" ? await Post.find({}) : await Post.find({ user_id: req.params.user_id });
             return res.json(posts);
         } catch (e) {
             console.log(e);

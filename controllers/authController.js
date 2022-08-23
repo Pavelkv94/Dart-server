@@ -8,12 +8,12 @@ const { v1 } = require("uuid");
 const UserProfile = require("../models/UserProfile");
 
 //создаем функцию которая принимает ИД и роль и засовываем эт овсе в обьект пайлоад
-const generateAccessToken = (id, roles) => {
+const generateAccessToken = (id, roles, time) => {
     const payload = {
         id,
         roles,
     };
-    return jwt.sign(payload, secret, { expiresIn: "24h" }); //передаем обьект, секретный ключ который храниться на сервере и опции
+    return jwt.sign(payload, secret, { expiresIn: `${time}s` }); //передаем обьект, секретный ключ который храниться на сервере и опции
 };
 
 class authController {
@@ -78,7 +78,7 @@ class authController {
 
     async login(req, res) {
         try {
-            const { email, password } = req.body; //получаем данные
+            const { email, password, time } = req.body; //получаем данные
 
             const user = await UserAuth.findOne({ email }); // ищем юзера
             if (!user) {
@@ -90,7 +90,7 @@ class authController {
                 return res.status(400).json({ message: "Password incorrect" });
             }
 
-            const token = generateAccessToken(user._id, user.roles); // _id монго генерирует сам
+            const token = generateAccessToken(user._id, user.roles, time); // _id монго генерирует сам
             return res.json({ token, email: user.email, roles: user.roles, user_id: user.user_id });
         } catch (e) {
             console.log(e);
