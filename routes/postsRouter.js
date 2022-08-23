@@ -5,7 +5,8 @@ const router = new Router();
 
 
 router.post("/create", authMiddleware, postsController.createPost);
-router.get("/getMyPosts", authMiddleware, postsController.getMyPosts);
+router.get("/getPosts/:user_id", authMiddleware, postsController.getPosts);
+router.get("/getSavedPosts/:user_id", authMiddleware, postsController.getSavedPosts);
 router.put("/addComment", authMiddleware, postsController.addComment);
 router.post("/liked", authMiddleware, postsController.addPostLike);
 router.post("/likedComment", authMiddleware, postsController.addCommentLike);

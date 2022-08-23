@@ -123,6 +123,14 @@ class authController {
             console.log(e);
         }
     }
+    async getPhoto(req, res) {
+        try {
+            const user = await UserProfile.findOne({user_id: req.params.user_id}); //получаем юзеров
+            res.json({photo: user.photo});
+        } catch (e) {
+            console.log(e);
+        }
+    }
 }
 
 module.exports = new authController();

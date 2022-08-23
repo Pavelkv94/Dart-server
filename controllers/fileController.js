@@ -5,6 +5,7 @@ const File = require('../models/File')
 const { response } = require('express');
 const UserAuth = require('../models/UserAuth');
 const UserProfile = require('../models/UserProfile');
+const Post = require('../models/Post');
 
 class FileController {
     // async createDir(req, res) {
@@ -35,6 +36,7 @@ class FileController {
 
             const user = await UserAuth.findById(req.user.id);
             await UserProfile.findOneAndUpdate({user_id: user.user_id}, { photo: `/storage/${user.user_id}${file.name.slice(-4)}`});
+            await Post.updateMany({ user_id: user.user_id }, {userAvatar: `/storage/${user.user_id}${file.name.slice(-4)}` } )
 
             const oldFile = await File.findOne({user: user.user_id});
 

@@ -12,6 +12,7 @@ router.post(
 );
 router.post("/login", controller.login);
 router.get("/me/:user_id", authMiddleware, controller.me);
+router.get("/getPhoto/:user_id", authMiddleware, controller.getPhoto);
 // router.get("/users", authMiddleware,  controller.getUsers); //todo добавляем мидлварю чтоб только зареганый юзер мог сделать такой запрос
 router.get("/users", roleMiddleware(["ADMIN", "User"]), controller.getUsers); //todo добавляем мидлварю чтоб только юзер с указанной ролью мог сделать такой запрос
 

@@ -16,15 +16,22 @@ class PostsController {
             res.status(500).json({ message: "Server Error with create post" });
         }
     }
-    async getMyPosts(req, res) {
+    async getPosts(req, res) {
         try {
-            const user = await UserAuth.findById(req.user.id);
-            const myPosts = await Post.find({ user_id: user.user_id });
-
-            return res.json(myPosts); //мессадж
+            const posts = await Post.find({ user_id: req.params.user_id });
+            return res.json(posts);
         } catch (e) {
             console.log(e);
-            res.status(500).json({ message: "Server Error with get my posts" });
+            res.status(500).json({ message: "Server Error with get  posts" });
+        }
+    }
+    async getSavedPosts(req, res) {
+        try {
+            const savedPosts = await Post.find({ likes: {$all: [req.params.user_id]} });
+            return res.json(savedPosts);
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({ message: "Server Error with get saved posts" });
         }
     }
     async addComment(req, res) {
