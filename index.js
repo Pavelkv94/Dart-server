@@ -6,10 +6,13 @@ const ProfileRouter = require("./routes/profileRouter");
 const outDataRouter = require("./routes/outDataRouter");
 const postsRouter = require("./routes/postsRouter");
 const usersRouter = require("./routes/usersRouter");
+const messagesRouter = require("./routes/messagesRouter");
+const Message = require("./models/Message");
 
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
+const WSPORT = process.env.WSPORT || 5050;
 const url = `mongodb+srv://${process.env.DB_OWNER}:${process.env.DB_PASS}@clusterfortgbot.hi5sp.mongodb.net/Auth?retryWrites=true&w=majority`;
 
 // Установим подключение по умолчанию
@@ -44,6 +47,7 @@ server.use("/auth", authRouter);
 server.use("/weather", outDataRouter);
 server.use("/posts", postsRouter);
 server.use("/users", usersRouter);
+server.use("/messages", messagesRouter);
 server.use(
     express.static("public", {
         setHeaders: function setHeaders(res, path, stat) {
@@ -64,5 +68,52 @@ const start = async () => {
       console.log(e);
   }
 };
+
+
+//!+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+const ws = require('ws');
+
+const wss = new ws.Server({
+    port: WSPORT,
+}, () => console.log(`WS Server started on 5050`))
+
+
+wss.on('connection', function connection(ws) {
+    ws.on('message', async  function (message) {
+        message = JSON.parse(message)
+        const newMessage = new Message({
+            user_id: message.user_id,
+            photo: message.photo,
+            message: message.message,
+            id: message.id,
+            event: message.event,
+            date: message.date,
+            image: message.image
+        })
+        await newMessage.save();
+        
+        switch (message.event) {
+            case 'message':
+                broadcastMessage(message)
+                break;
+            // case 'connection':
+            //     broadcastMessages(messages)
+            //     break;
+        }
+    })
+})
+
+function broadcastMessage(message, id) {
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify(message))
+    })
+}
+function broadcastMessages(messages, id) {
+    // const messages = Message.find({});
+    wss.clients.forEach(client => {
+        client.send(messages)
+    })
+}
+//!+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 start();
