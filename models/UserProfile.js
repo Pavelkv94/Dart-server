@@ -13,7 +13,10 @@ const UserProfile = new Schema({
     contacts: { type: Object, ref: "Contacts" },
     about: { type: String },
     created_at: { type: String },
-    friends: {type: [String]}
+    friends: {type: [String]},
+    education: { type: String },
+    work:  { type: String },
+    gender:  { type: String }
 });
 
 module.exports = model("UserProfile", UserProfile);

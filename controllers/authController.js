@@ -50,20 +50,23 @@ class authController {
                 status: "This is status!",
                 photo: "",
                 background: "https://wallpaper.dog/large/17198193.jpg",
-                country: "Belarus, Minsk",
-                birthday: "02/17/1994",
+                country: "—",
+                birthday: "",
                 contacts: {
-                    facebook: "https://facebook.com",
-                    youtube: "https://youtube.com",
-                    vk: "https://vk.com",
-                    instagram: "https://instagram.com",
+                    facebook: "https://facebook.com/",
+                    youtube: "https://youtube.com/",
+                    vk: "https://vk.com/",
+                    instagram: "https://instagram.com/",
                     linkedin: "https://www.linkedin.com/",
                     twitter: "https://www.twitter.com/",
                     telegram: "https://t.me/",
                 },
-                about: "Tell about youself",
+                about: "—",
                 created_at: new Date(),
-                friends: []
+                friends: [],
+                education: "—",
+                work: "—",
+                gender: "Male",
             });
 
             await user.save(); //сохраняем в БД
