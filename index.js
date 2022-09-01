@@ -8,6 +8,7 @@ const postsRouter = require("./routes/postsRouter");
 const usersRouter = require("./routes/usersRouter");
 const messagesRouter = require("./routes/messagesRouter");
 const Message = require("./models/Message");
+const http = require('http')
 
 require("dotenv").config();
 
@@ -35,7 +36,7 @@ db.once("open", function () {
 });
 
 const server = express();
-
+const httpServer = http.createServer(server)
 //todo server.use(cors({ origin: "http://localhost:3000" }))
 server.use(cors({ origin: "*" })); //!------CORS DANGER ==> ./corsMiddleware.js
 
@@ -61,7 +62,7 @@ server.use(
 const start = async () => {
   try {
       await mongoose.connect(url);
-      server.listen(PORT, () =>
+      httpServer.listen(PORT, () =>
           console.log(`Server is running at port ${PORT}`)
       );
   } catch (e) {
@@ -71,12 +72,10 @@ const start = async () => {
 
 
 //!+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-const ws = require('ws');
-
-const wss = new ws.Server({
-    port: WSPORT,
-}, () => console.log(`WS Server started on 5050`))
-
+const WebSocket = require('ws')
+const wss = new WebSocket.Server({
+    'server': httpServer
+})
 
 wss.on('connection', function connection(ws) {
     ws.on('message', async  function (message) {
