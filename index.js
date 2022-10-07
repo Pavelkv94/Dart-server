@@ -13,7 +13,6 @@ const http = require('http')
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
-const WSPORT = process.env.WSPORT || 5050;
 const url = `mongodb+srv://${process.env.DB_OWNER}:${process.env.DB_PASS}@clusterfortgbot.hi5sp.mongodb.net/Auth?retryWrites=true&w=majority`;
 
 // Установим подключение по умолчанию

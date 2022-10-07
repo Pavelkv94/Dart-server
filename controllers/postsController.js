@@ -45,7 +45,16 @@ class PostsController {
             res.status(500).json({ message: "Server Error with add comment" });
         }
     }
-
+    async removePost(req, res) {
+        try {
+            await Post.findOneAndDelete({_id: req.params.post_id})
+            return res.json({message: 'Success'});
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({ message: "Server Error with delete  posts" });
+        }
+    }
+    
     async addPostLike(req, res) {
         try {
             await Post.findOneAndUpdate({ _id: req.body.post_id }, { $push: { likes: req.body.user_id } });

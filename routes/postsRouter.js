@@ -11,5 +11,6 @@ router.put("/addComment", authMiddleware, postsController.addComment);
 router.post("/liked", authMiddleware, postsController.addPostLike);
 router.post("/likedComment", authMiddleware, postsController.addCommentLike);
 router.post("/unliked", authMiddleware, postsController.removePostLike);
+router.delete("/deletePost/:post_id", authMiddleware, postsController.removePost);
 
 module.exports = router;
