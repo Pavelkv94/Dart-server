@@ -21,6 +21,7 @@
     "mongoose": "^6.3.3",
     "node-accuweather": "^1.7.0",
     "nodemin": "^1.0.1",
+    "request": "^2.88.2",
     "uuid": "^8.3.2",
     "ws": "^8.8.1"
   }
