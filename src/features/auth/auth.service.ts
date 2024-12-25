@@ -10,6 +10,8 @@ import { injectable } from "inversify";
 import { SecurityDeviceService } from "../securityDevices/securityDevices.service";
 import { db } from "../../db/database";
 import { DatabaseAvailableLabels, DatabaseAvailableRelations } from "../../db/database.labels";
+import { SecurityDeviceRepository } from "../securityDevices/repositories/securityDevices.repository";
+import { getExpirationDate } from "../../utils/date/getExpirationDate";
 
 @injectable()
 export class AuthService {
@@ -18,62 +20,62 @@ export class AuthService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
     private bcryptService: BcryptService,
-    private securityDeviceService: SecurityDeviceService
+    private securityDeviceService: SecurityDeviceService,
+    private securityDeviceRepository: SecurityDeviceRepository
   ) {}
 
   async registration(payload: UserInputModel): Promise<string | null> {
     const user = await this.userService.create(payload);
-    // const confirmationCode = await this.userRepository.findConfirmationCodeByUserId(newUserId);
 
     return user.confirmationCode;
   }
 
   async login(user_id: string, ip: string = "", userAgent: string = ""): Promise<JwtTokensType> {
-    const tokens = await this.jwtService.generateTokens({ user_id, deviceId: randomUUID() });
+    const tokens = await this.jwtService.generateTokens({ user_id, device_id: randomUUID() });
     const refreshToken: JWTPayloadModel = await this.jwtService.decodeToken(tokens.refreshToken);
 
     const device = await this.securityDeviceService.addDevice(refreshToken, ip, userAgent);
 
-    db.matchNodes({
+    db.connectNodes({
       label1: DatabaseAvailableLabels.USER,
       label2: DatabaseAvailableLabels.SECURITY_DEVICE,
       property1: "id",
       value1: user_id,
-      property2: "deviceId",
-      value2: device.deviceId,
+      property2: "device_id",
+      value2: device.device_id,
       relation: DatabaseAvailableRelations.DEVICE,
     });
-    
+
     return tokens;
   }
-  // async refresh(ip: string = "", userAgent: string = "", user_id: string, deviceId: string): Promise<JwtTokensType> {
-  //   const tokens = await this.jwtService.generateTokens({ user_id, deviceId });
-  //   const refreshToken: JWTPayloadModel = await this.jwtService.decodeToken(tokens.refreshToken);
-  //   await this.securityDeviceService.updateDevice(refreshToken, ip, userAgent);
+  async refresh(ip: string = "", userAgent: string = "", user_id: string, device_id: string): Promise<JwtTokensType> {
+    const tokens = await this.jwtService.generateTokens({ user_id, device_id });
+    const refreshToken: JWTPayloadModel = await this.jwtService.decodeToken(tokens.refreshToken);
+    await this.securityDeviceService.updateDevice(refreshToken, ip, userAgent);
 
-  //   return tokens;
-  // }
-  // async checkRefreshToken(token: string): Promise<{ user_id: string; deviceId: string } | null> {
-  //   const payload = await this.jwtService.verifyRefreshToken(token);
+    return tokens;
+  }
+  async checkRefreshToken(token: string): Promise<{ user_id: string; device_id: string } | null> {
+    const payload = await this.jwtService.verifyRefreshToken(token);
 
-  //   if (!payload) {
-  //     return null;
-  //   }
+    if (!payload) {
+      return null;
+    }
 
-  //   const user = await this.userService.findUser(payload.user_id);
+    const user = await this.userRepository.findUserById(payload.user_id);
 
-  //   if (!user) {
-  //     return null;
-  //   }
+    if (!user) {
+      return null;
+    }
 
-  //   const isSessionExists = await this.checkSessionVersion(payload);
+    const isSessionExists = await this.checkSessionVersion(payload);
 
-  //   if (!isSessionExists) {
-  //     return null;
-  //   }
+    if (!isSessionExists) {
+      return null;
+    }
 
-  //   return { user_id: payload.user_id, deviceId: payload.deviceId };
-  // }
+    return { user_id: payload.user_id, device_id: payload.device_id };
+  }
   async checkUserCredentials(payload: LoginInputModel): Promise<string | null> {
     const user = await this.userRepository.findUserByLoginOrEmail(payload.loginOrEmail);
 
@@ -87,61 +89,51 @@ export class AuthService {
     }
     return user.id;
   }
-  // async setConfirmEmailStatus(user_id: string, status: boolean): Promise<boolean> {
-  //   const user = await this.userRepository.findUserById(user_id);
-  //   if (!user) {
-  //     return false;
-  //   }
-  //   user.setConfirmEmailStatus(status);
-  //   await this.userRepository.save(user);
+  async setConfirmEmailStatus(user_id: string, status: boolean): Promise<void> {
+    await this.userRepository.update(user_id, { confirmationStatus: status });
+  }
+  async setNewConfirmCode(user_id: string): Promise<string> {
+    const newConfirmationCode = randomUUID();
+    const newExpirationDate = getExpirationDate(30);
 
-  //   return true;
-  // }
-  // async setNewConfirmCode(user_id: string): Promise<string> {
-  //   const newConfirmationCode = randomUUID();
-  //   const newExpirationDate = getExpirationDate(30);
+    const user = await this.userRepository.update(user_id, { confirmationCode: newConfirmationCode, confirmationCodeExpirationDate: newExpirationDate });
 
-  //   const user = await this.userRepository.findUserById(user_id);
+    if (!user) {
+      throw new Error("Something was wrong");
+    }
 
-  //   if (!user) {
-  //     throw new Error("Something was wrong");
-  //   }
+    return newConfirmationCode;
+  }
 
-  //   user.setConfirmCode(newConfirmationCode, newExpirationDate);
-  //   await this.userRepository.save(user);
+  async checkSessionVersion(payload: JWTPayloadModel): Promise<boolean> {
+    const lastActiveDate = new Date(payload.iat * 1000).toISOString();
 
-  //   return newConfirmationCode;
-  // }
-  // async setNewRecoveryCode(user_id: string): Promise<string> {
-  //   const newRecoveryCode = randomUUID();
-  //   const newExpirationDate = getExpirationDate(30);
+    // const result = await SecurityDeviceModel.findOne({ user_id: payload.user_id, device_id: payload.device_id, lastActiveDate: lastActiveDate });
+    const result = await this.securityDeviceRepository.findDeviceByVersion(payload.user_id, payload.device_id, lastActiveDate);
 
-  //   const user = await this.userRepository.findUserById(user_id);
+    return !!result;
+  }
+  async setNewRecoveryCode(user_id: string): Promise<string> {
+    const newRecoveryCode = randomUUID();
+    const newExpirationDate = getExpirationDate(30);
 
-  //   if (!user) {
-  //     throw new Error("Something was wrong");
-  //   }
+    const user = await this.userRepository.update(user_id, { recoveryCode: newRecoveryCode, recoveryCodeExpirationDate: newExpirationDate });
 
-  //   user.setRecoveryCode(newRecoveryCode, newExpirationDate);
+    if (!user) {
+      throw new Error("Something was wrong");
+    }
 
-  //   return newRecoveryCode;
-  // }
-  // async checkSessionVersion(payload: JWTPayloadModel): Promise<boolean> {
-  //   const lastActiveDate = new Date(payload.iat * 1000).toISOString();
+    return newRecoveryCode;
+  }
 
-  //   const result = await SecurityDeviceModel.findOne({ user_id: payload.user_id, deviceId: payload.deviceId, lastActiveDate: lastActiveDate });
+  async setNewPassword(recoveryCode: string, newPassword: string): Promise<boolean> {
+    const userId = await this.userRepository.findUserByRecoveryCode(recoveryCode);
 
-  //   return !!result;
-  // }
-  // async setNewPassword(recoveryCode: string, newPassword: string): Promise<boolean> {
-  //   const userId = await this.userRepository.findUserByRecoveryCode(recoveryCode);
+    if (!userId) {
+      return false;
+    }
 
-  //   if (!userId) {
-  //     return false;
-  //   }
-
-  //   const isUpdated = await this.userService.updateUserPass(userId, newPassword);
-
-  //   return isUpdated;
-  // }
+    await this.userService.updateUserPass(userId, newPassword);
+    return true;
+  }
 }

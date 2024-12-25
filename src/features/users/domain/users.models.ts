@@ -2,6 +2,7 @@
 // import { HydratedDocument } from "mongoose";
 // import { IUserMethods } from "./User.entity";
 
+import { DatabaseAvailableLabels } from "../../../db/database.labels";
 import { SortDirection } from "../../../types/common-types";
 
 export type EmailConfirmationEntityType = {
@@ -69,4 +70,9 @@ export type UserNode = {
   password: string;
   login: string;
   email: string;
+  confirmationStatus: boolean;
+  confirmationCodeExpirationDate: string;
+  recoveryCode: string;
+  recoveryCodeExpirationDate: string;
+  name: DatabaseAvailableLabels;
 };

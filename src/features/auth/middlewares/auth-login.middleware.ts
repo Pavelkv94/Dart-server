@@ -12,7 +12,7 @@ export const authLoginMiddleware = async (req: Request, res: Response, next: Nex
     return next(ApiError.Unauthorized());
   }
 
-  req.user = { id: user_id, deviceId: "" };
+  req.user = { id: user_id, device_id: "" };
 
   next();
 };

@@ -9,7 +9,7 @@ export class SecurityDeviceService {
   constructor(private securityDeviceRepository: SecurityDeviceRepository) {}
   async addDevice(refreshToken: JWTPayloadModel, ip: string, userAgent: string): Promise<any> {
     const newDevice = {
-      deviceId: refreshToken.deviceId,
+      device_id: refreshToken.device_id,
       user_id: refreshToken.user_id,
       lastActiveDate: new Date(refreshToken.iat * 1000).toISOString(),
       expirationDate: refreshToken.exp,
@@ -17,44 +17,41 @@ export class SecurityDeviceService {
       ip: ip,
     };
 
-    const deviceId = await this.securityDeviceRepository.addDevice(newDevice);
+    const device_id = await this.securityDeviceRepository.addDevice(newDevice);
 
-    return deviceId;
+    return device_id;
   }
-//   async updateDevice(refreshToken: JWTPayloadModel, ip: string, userAgent: string): Promise<boolean> {
-//     const newDevice = {
-//       deviceId: refreshToken.deviceId,
-//       user_id: refreshToken.user_id,
-//       lastActiveDate: new Date(refreshToken.iat * 1000).toISOString(),
-//       expirationDate: refreshToken.exp,
-//       title: userAgent,
-//       ip: ip,
-//     };
 
-//     const isUpdated = await this.securityDeviceRepository.updateDevice(newDevice);
-//     return isUpdated;
-//   }
-//   async deleteOtherSecurityDevices(user_id: string, deviceId: string): Promise<boolean> {
-//     const isDeleted = await this.securityDeviceRepository.deleteDevices(user_id, deviceId);
+  async updateDevice(refreshToken: JWTPayloadModel, ip: string, userAgent: string): Promise<void> {
+    const payload = {
+      // device_id: refreshToken.device_id,
+      user_id: refreshToken.user_id,
+      lastActiveDate: new Date(refreshToken.iat * 1000).toISOString(),
+      expirationDate: refreshToken.exp,
+      title: userAgent,
+      ip: ip,
+    };
+    await this.securityDeviceRepository.updateDevice(refreshToken.device_id, payload);
+  }
 
-//     return isDeleted;
-//   }
-//   async deleteSecurityDevice(deviceId: string, user_id: string): Promise<ResultObject<boolean | null>> {
-//     const deviceOwnerId = await this.securityDeviceRepository.findDevice(deviceId);
+  async deleteOtherSecurityDevices(user_id: string, device_id: string): Promise<void> {
+    await this.securityDeviceRepository.deleteOtherSecurityDevices(user_id, device_id);
+  }
+  async deleteSecurityDevice(device_id: string, user_id: string): Promise<ResultObject<boolean | null>> {
+    const deviceNode = await this.securityDeviceRepository.findDeviceById(device_id);
 
-//     const isOwner = deviceOwnerId === user_id;
-
-//     if (!isOwner) {
-//       return {
-//         status: ResultStatus.FORBIDDEN,
-//         errorMessage: "Access forbidden",
-//         data: null,
-//       };
-//     }
-//     const isDeleted = await this.securityDeviceRepository.deleteDevice(deviceId, user_id);
-//     return {
-//       status: isDeleted ? ResultStatus.SUCCESS : ResultStatus.FORBIDDEN,
-//       data: isDeleted,
-//     };
-//   }
+    const isOwner = deviceNode?.user_id === user_id;
+    if (!isOwner) {
+      return {
+        status: ResultStatus.FORBIDDEN,
+        errorMessage: "Access forbidden",
+        data: null,
+      };
+    }
+    await this.securityDeviceRepository.deleteDevice(device_id, user_id);
+    return {
+      status: ResultStatus.SUCCESS,
+      data: null,
+    };
+  }
 }

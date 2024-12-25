@@ -14,19 +14,20 @@ import { AuthController } from "./auth.controller";
 
 export const authRouter = Router();
 
-const authController = container.resolve(AuthController)
+const authController = container.resolve(AuthController);
 
-authRouter.post("/registration", 
-    authRegistrationBodyValidators, rateLimiterMiddleware, authController.registration.bind(authController));
-// authRouter.post("/registration-confirmation", rateLimiterMiddleware, authConfirmBodyValidators, authController.registrationConfirmation.bind(authController));
-// authRouter.post("/registration-email-resending", authEmailResendBodyValidators, rateLimiterMiddleware, authController.registrationEmailResending.bind(authController));
+authRouter.post("/registration", authRegistrationBodyValidators, rateLimiterMiddleware, authController.registration.bind(authController));
+authRouter.post("/registration-confirmation", rateLimiterMiddleware, authConfirmBodyValidators, authController.registrationConfirmation.bind(authController));
+authRouter.post(
+  "/registration-email-resending",
+  authEmailResendBodyValidators,
+  rateLimiterMiddleware,
+  authController.registrationEmailResending.bind(authController)
+);
 
-authRouter.post("/login", 
-    rateLimiterMiddleware, authLoginBodyValidators, 
-    authLoginMiddleware, 
-    authController.login.bind(authController));
-// authRouter.post("/refresh-token", authRefreshTokenMiddleware, authController.refresh.bind(authController));
-// authRouter.get("/me", authAccessTokenMiddleware, authController.me.bind(authController));
-// authRouter.post("/logout", authRefreshTokenMiddleware, authController.logout.bind(authController));
-// authRouter.post("/password-recovery", rateLimiterMiddleware, authEmailValidators, authController.passwordRecovery.bind(authController));
-// authRouter.post("/new-password", rateLimiterMiddleware, authRecoveryBodyValidators, authController.setNewPassword.bind(authController));
+authRouter.post("/login", rateLimiterMiddleware, authLoginBodyValidators, authLoginMiddleware, authController.login.bind(authController));
+authRouter.post("/refresh-token", authRefreshTokenMiddleware, authController.refresh.bind(authController));
+authRouter.get("/me", authAccessTokenMiddleware, authController.me.bind(authController));
+authRouter.post("/logout", authRefreshTokenMiddleware, authController.logout.bind(authController));
+authRouter.post("/password-recovery", rateLimiterMiddleware, authEmailValidators, authController.passwordRecovery.bind(authController));
+authRouter.post("/new-password", rateLimiterMiddleware, authRecoveryBodyValidators, authController.setNewPassword.bind(authController));

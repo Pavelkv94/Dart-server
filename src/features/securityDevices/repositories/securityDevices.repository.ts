@@ -1,49 +1,49 @@
 import { injectable } from "inversify";
 // import { SecurityDeviceModel } from "../../../db/models/SecurityDevice.model";
-import { DeviceEntityModel } from "../models/securityDevices.model";
+import { DeviceCreateDto, DeviceNode, DeviceUpdateDto } from "../models/securityDevices.model";
 import { db } from "../../../db/database";
 import { DatabaseAvailableLabels } from "../../../db/database.labels";
 @injectable()
 export class SecurityDeviceRepository {
-  //   async findDevice(deviceId: string): Promise<string | null> {
-  //     const device = await SecurityDeviceModel.findOne({ deviceId }).lean();
+  async findDeviceById(device_id: string): Promise<DeviceNode | null> {
+    const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE}) WHERE n.device_id = $device_id RETURN n`;
 
-  //     if (!device) {
-  //       return null;
-  //     }
+    const deviceNode = await db.findNodeByField(DatabaseAvailableLabels.SECURITY_DEVICE, { device_id });
+    if (!deviceNode) {
+      return null;
+    }
+    return deviceNode;
+  }
+  async findDeviceByVersion(user_id: string, device_id: string, lastActiveDate: string): Promise<any> {
+    const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE}) WHERE n.user_id = $user_id AND n.device_id = $device_id AND n.lastActiveDate = $lastActiveDate RETURN n`;
 
-  //     return device.user_id;
-  //   }
-  async addDevice(payload: DeviceEntityModel): Promise<string> {
+    const userDocument = await db.findNodeWithOptionalParams(query, { user_id, device_id, lastActiveDate });
+    if (!userDocument) {
+      return null;
+    }
+    return userDocument;
+  }
+
+  async addDevice(payload: DeviceCreateDto): Promise<string> {
     const response = await db.createNode(DatabaseAvailableLabels.SECURITY_DEVICE, payload);
 
     return response;
   }
-  //   async updateDevice(payload: DeviceEntityModel): Promise<boolean> {
-  //     const result = await SecurityDeviceModel.updateOne(
-  //       { deviceId: payload.deviceId },
-  //       {
-  //         $set: payload,
-  //       }
-  //     );
+  async updateDevice(device_id: string, payload: DeviceUpdateDto): Promise<boolean> {
+    const deviceNode = await db.updateNodeByField(DatabaseAvailableLabels.SECURITY_DEVICE, { device_id }, payload);
 
-  //     return result.matchedCount > 0;
-  //   }
+    return deviceNode;
+  }
 
-  //   async deleteDevices(user_id: string, deviceId: string) {
-  //     const result = await SecurityDeviceModel.deleteMany({
-  //       user_id: user_id,
-  //       deviceId: { $ne: deviceId },
-  //     });
+  async deleteOtherSecurityDevices(user_id: string, device_id: string): Promise<void> {
+    const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE})
+      WHERE n.user_id = $user_id AND n.device_id <> $device_id
+      DETACH DELETE n`;
+    await db.deleteNode(query, { device_id, user_id });
+  }
+  async deleteDevice(device_id: string, user_id: string): Promise<void> {
+    const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE}) WHERE n.user_id = $user_id AND n.device_id = $device_id DETACH DELETE n`;
 
-  //     return result.deletedCount > 0;
-  //   }
-  //   async deleteDevice(deviceId: string, user_id: string) {
-  //     const result = await SecurityDeviceModel.deleteOne({
-  //       user_id: user_id,
-  //       deviceId: deviceId,
-  //     });
-
-  //     return result.deletedCount > 0;
-  //   }
+    await db.deleteNode(query, { device_id, user_id });
+  }
 }

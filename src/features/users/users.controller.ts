@@ -6,11 +6,11 @@ import { HTTP_STATUSES } from "../../types/enums";
 import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel } from "./domain/users.models";
 import { UserQueryRepository } from "./repositories/users.query-repository";
 import { UserService } from "./users.service";
+import { AuthService } from "../auth/auth.service";
 
 @injectable()
 export class UserController {
-  constructor(public userService: UserService, public userQueryRepository: UserQueryRepository) // , public authService: AuthService
-  {}
+  constructor(public userService: UserService, public userQueryRepository: UserQueryRepository, public authService: AuthService) {}
 
   async getUsers(req: Request<{}, {}, {}, UsersInputQueryModel>, res: Response<OutputDataWithPagination<UserViewModel>>, next: NextFunction) {
     try {
@@ -32,13 +32,12 @@ export class UserController {
   async createUser(req: Request<{}, {}, UserInputModel>, res: Response<UserViewModel>, next: NextFunction) {
     try {
       const newUser = await this.userService.create(req.body);
-      // const newUser = await this.userQueryRepository.findUserById(userId);
 
       if (!newUser) {
         return next(ApiError.NotFound("The requested user was not found"));
       }
 
-      // await this.authService.setConfirmEmailStatus(newUser.id, true);
+      await this.authService.setConfirmEmailStatus(newUser.id, true);
 
       res.status(201).json(newUser);
     } catch (error) {

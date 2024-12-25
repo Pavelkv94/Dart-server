@@ -13,6 +13,8 @@ import { UserController } from "./features/users/users.controller";
 import { SecurityDeviceRepository } from "./features/securityDevices/repositories/securityDevices.repository";
 // import { SecurityDeviceController } from "./features/securityDevices/securityDevices.controller";
 import { SecurityDeviceService } from "./features/securityDevices/securityDevices.service";
+import { SecurityDeviceQueryRepository } from "./features/securityDevices/repositories/securityDevices.query-repository";
+import { SecurityDeviceController } from "./features/securityDevices/securityDevices.controller";
 
 
 export const container = new Container();
@@ -25,9 +27,9 @@ container.bind(BcryptService).to(BcryptService);
 container.bind(JwtService).to(JwtService);
 
 container.bind(SecurityDeviceRepository).to(SecurityDeviceRepository);
-// container.bind(SecurityDeviceQueryRepository).to(SecurityDeviceQueryRepository);
+container.bind(SecurityDeviceQueryRepository).to(SecurityDeviceQueryRepository);
 container.bind(SecurityDeviceService).to(SecurityDeviceService);
-// container.bind(SecurityDeviceController).to(SecurityDeviceController);
+container.bind(SecurityDeviceController).to(SecurityDeviceController);
 
 container.bind(UserRepository).to(UserRepository);
 container.bind(UserQueryRepository).to(UserQueryRepository);

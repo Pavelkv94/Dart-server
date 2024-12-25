@@ -1,6 +1,8 @@
 import neo4j, { Driver, Session } from "neo4j-driver";
 import { DatabaseAvailableLabels } from "./database.labels";
 import { MatchNodesDtoType } from "./db.types";
+import { UserNode } from "../features/users/domain/users.models";
+import { DeviceNode } from "../features/securityDevices/models/securityDevices.model";
 
 export class Database {
   private driver: Driver | null = null;
@@ -46,19 +48,62 @@ export class Database {
     return this.driver.session();
   }
 
-  async findNode(query: string, params: Record<string, any>) {
+  async findNodeByField(label: DatabaseAvailableLabels, param: Record<string, any>): Promise<any | null> {
     const session = this.getSession();
     try {
-      // const query = `MATCH (n:${label} WHERE n.email = $loginOrEmail OR n.login = $loginOrEmail RETURN n`;
+      const searchCritety = Object.keys(param).map((el) => `n.${el} = "${param[el]}"`)[0];
+
+      const query = `MATCH (n:${label}) WHERE ${searchCritety} RETURN n`;
+
+      const result = await session.run(query, param);
+
+      if (result.records.length === 0) {
+        return null; // Return null if no node is found
+      }
+
+      const node = result.records[0].get("n");
+
+      return node.properties;
+    } catch (error: any) {
+      console.error("Error find node:", error);
+      throw new Error(`Failed to find node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async findNodeWithOptionalParams(query: string, params: Record<string, any>) {
+    const session = this.getSession();
+    try {
       const result = await session.run(query, params);
 
       if (result.records.length === 0) {
         return null; // Return null if no node is found
       }
-      
-      const createdNode = result.records[0].get("n");
 
-      return createdNode.properties;
+      const node = result.records[0].get("n");
+
+      return node.properties;
+    } catch (error: any) {
+      console.error("Error find node:", error);
+      throw new Error(`Failed to find node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async findNodes(query: string, params: Record<string, any>) {
+    const session = this.getSession();
+    try {
+      const result = await session.run(query, params);
+
+      if (result.records.length === 0) {
+        return [];
+      }
+
+      const nodes = result.records.map((record) => record.get("n").properties);
+
+      return nodes;
     } catch (error: any) {
       console.error("Error find node:", error);
       throw new Error(`Failed to find node: ${error.message}`);
@@ -83,7 +128,37 @@ export class Database {
     }
   }
 
-  async matchNodes(matchDto: MatchNodesDtoType) {
+  async updateNodeByField(label: DatabaseAvailableLabels, fieldObject: any, params: Record<string, any>) {
+    const session = this.getSession();
+    const valuesForUpdate = Object.keys(params)
+      .map((el) => `n.${el} = $${el}`)
+      .join(", ");
+
+    const searchCritety = Object.keys(fieldObject).map((el) => `{${el}: "${fieldObject[el]}"}`)[0];
+
+    try {
+      const query = `
+      MATCH (n:${label} ${searchCritety})
+      SET ${valuesForUpdate}
+      RETURN n
+    `;
+
+      const result = await session.run(query, params);
+      if (result.records.length === 0) {
+        return null; // Return null if no node was found or updated
+      }
+      const updatedNode = result.records[0].get("n");
+
+      return updatedNode.properties;
+    } catch (error: any) {
+      console.error("Error updating node:", error);
+      throw new Error(`Failed to update node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async connectNodes(matchDto: MatchNodesDtoType) {
     const session = this.getSession();
     try {
       // Cypher query to match two nodes based on their properties and create a relationship
@@ -113,13 +188,24 @@ export class Database {
 
       return matchedEntities;
     } catch (error: any) {
-      console.error("Error matching entities:", error);
-      throw new Error(`Failed to match entities: ${error.message}`);
+      console.error("Build relations Error:", error);
+      throw new Error(`Failed to build relations: ${error.message}`);
     } finally {
       await session.close();
     }
   }
 
+  async deleteNode(query: string, params: Record<string, any>) {
+    const session = this.getSession();
+    try {
+      await session.run(query, params);
+    } catch (error: any) {
+      console.error("Error delete node:", error);
+      throw new Error(`Failed to delete node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
   async dropDatabase(): Promise<void> {
     const session = this.getSession();
     try {

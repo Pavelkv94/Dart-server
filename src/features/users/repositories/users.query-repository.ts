@@ -1,5 +1,7 @@
 import { injectable } from "inversify";
-import { UsersValidInputQueryModel } from "../domain/users.models";
+import { UserNode, UsersValidInputQueryModel } from "../domain/users.models";
+import { DatabaseAvailableLabels } from "../../../db/database.labels";
+import { db } from "../../../db/database";
 
 @injectable()
 export class UserQueryRepository {
@@ -37,89 +39,73 @@ export class UserQueryRepository {
     //   totalCount: usersCount,
     //   items: usersView,
     // };
-    return "users"
+    return "users";
   }
   async getUsersCount(searchLoginTerm: string, searchEmailTerm: string): Promise<any> {
     // let filter: any = {
     //   $or: [],
     // };
-
     // if (searchLoginTerm) {
     //   filter.$or.push({ login: { $regex: searchLoginTerm, $options: "i" } });
     // }
     // if (searchEmailTerm) {
     //   filter.$or.push({ email: { $regex: searchEmailTerm, $options: "i" } });
     // }
-
     // if (filter.$or.length === 0) {
     //   filter = {};
     // }
-
     // return UserModel.countDocuments(filter);
   }
-  async findUserById(id: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ _id: id });
-
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // return UserViewDto.mapToView(userFromDb);
+  async findUserById(id: string): Promise<UserNode | null> {
+    const userDocument = await db.findNodeByField(DatabaseAvailableLabels.USER, { id });
+    if (!userDocument) {
+      return null;
+    }
+    return userDocument;
   }
-  async findUserByEmail(email: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ email: email });
 
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // return UserViewDto.mapToView(userFromDb);
+  async findUserByLogin(login: string): Promise<any | null> {
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { login });
+    if (!userNode) {
+      return null;
+    }
+    return userNode;
   }
+
+  async findUserByEmail(email: string): Promise<any | null> {
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { email });
+    if (!userNode) {
+      return null;
+    }
+    return userNode;
+  }
+
   async findUserByConfirmationCode(code: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ "emailConfirmation.confirmationCode": code });
-
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // return UserViewDto.mapToView(userFromDb);
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { confirmationCode: code });
+    if (!userNode) {
+      return null;
+    }
+    return userNode;
   }
-  async findEmailConfirmationByCode(code: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ "emailConfirmation.confirmationCode": code }).lean();
-
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // return userFromDb.emailConfirmation;
+  async findUserConfirmationByCode(code: string): Promise<UserNode | null> {
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { confirmationCode: code });
+    if (!userNode) {
+      return null;
+    }
+    return userNode;
   }
-  async findEmailConfirmationByEmail(email: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ email: email }).lean();
-
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // return userFromDb.emailConfirmation;
+  async findEmailConfirmationByEmail(email: string): Promise<boolean | null> {
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { email });
+    if (!userNode) {
+      return null;
+    }
+    return userNode.confirmationStatus;
   }
   async findRecoveryByCode(code: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ "recoveryConfirmation.recoveryCode": code }).lean();
-
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // return userFromDb.recoveryConfirmation;
-  }
-  async findMe(user_id: string): Promise<any> {
-    // const userFromDb = await UserModel.findOne({ _id: user_id });
-
-    // if (!userFromDb) {
-    //   return null;
-    // }
-
-    // const meDto = new MeViewDto(userFromDb);
-
-    // return meDto;
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { recoveryCode: code });
+    if (!userNode) {
+      return null;
+    }
+    return userNode;
   }
 }

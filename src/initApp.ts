@@ -9,6 +9,7 @@ import { authRouter } from "./features/auth/auth.router";
 import { testingRouter } from "./features/testing/testing.router";
 import { usersRouter } from "./features/users/users.router";
 import { errorHandlerMiddleware } from "./global-middlewares/error-handler.middleware";
+import { securityDevicesRouter } from "./features/securityDevices/securityDevices.router";
 
 // import { SETTINGS } from "./settings";
 // import { postsRouter } from "./features/posts/posts.router";
@@ -37,25 +38,12 @@ export const initApp = () => {
     res.status(HTTP_STATUSES.SUCCESS).json({ version: "1.1" });
   });
 
-  //   app.get('/1', async (req, res) => {
-  //     try {
-  //         // const result = await session.run('MATCH (n:Person) RETURN n LIMIT 20');
-  //         // const records = result.records.map((record: any) => record.get('n').properties);
-  //         // res.json(records);
-  //         // Database.create("User", {name: "Anna", age: 32, car: "audi"})
-  //         res.sendStatus(200)
-  //     } catch (error) {
-  //         console.error(error);
-  //         res.status(500).send('Error connecting to the database');
-  //     }
-  // });
-
   app.use(SETTINGS.PATH.AUTH, authRouter);
   // app.use(SETTINGS.PATH.BLOGS, blogsRouter);
   // app.use(SETTINGS.PATH.POSTS, postsRouter);
   app.use(SETTINGS.PATH.USERS, usersRouter);
   // app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
-  // app.use(SETTINGS.PATH.SECURITY, securityDevicesRouter);
+  app.use(SETTINGS.PATH.SECURITY, securityDevicesRouter);
 
   app.use(SETTINGS.PATH.TESTING, testingRouter);
 

@@ -7,17 +7,17 @@ import { UserQueryRepository } from "../../users/repositories/users.query-reposi
 const userQueryRepository = container.resolve(UserQueryRepository);
 
 const code = body("code").custom(async (code) => {
-  const emailConfirmation = await userQueryRepository.findEmailConfirmationByCode(code);
+  const user = await userQueryRepository.findUserConfirmationByCode(code);
 
-  if (!emailConfirmation) {
+  if (!user) {
     throw new Error("The requested user was not found or code invalid");
   }
 
-  if (emailConfirmation.isConfirmed) {
+  if (user.confirmationStatus) {
     throw new Error("Email is already confirmed");
   }
 
-  if (hasDateExpired(emailConfirmation.expirationDate)) {
+  if (hasDateExpired(user.confirmationCodeExpirationDate)) {
     throw new Error("Your activation link is expired. Resend activation email.");
   }
   return true;

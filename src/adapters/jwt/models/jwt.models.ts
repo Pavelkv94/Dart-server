@@ -4,7 +4,7 @@ export type TokenEntityModel = {
 
 export type JWTPayloadModel = {
   user_id: string;
-  deviceId: string;
+  device_id: string;
   iat: number;
   exp: number;
 };

@@ -15,13 +15,14 @@ import { UserQueryRepository } from "../users/repositories/users.query-repositor
 import { UserInputModel } from "../users/domain/users.models";
 import { injectable } from "inversify";
 import { HTTP_STATUSES } from "../../types/enums";
+import { SecurityDeviceService } from "../securityDevices/securityDevices.service";
 
 @injectable()
 export class AuthController {
   constructor(
     private userQueryRepository: UserQueryRepository,
     public authService: AuthService,
-    // public securityDevicesService: SecurityDeviceService,
+    public securityDevicesService: SecurityDeviceService,
     private nodemailerService: NodemailerService
   ) {}
 
@@ -35,25 +36,25 @@ export class AuthController {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
-  // async refresh(req: Request, res: Response<LoginOutputModel>, next: NextFunction) {
-  //   try {
-  //     const { accessToken, refreshToken } = await this.authService.refresh(req.ip, req.headers["user-agent"], req.user.id, req.user.deviceId);
+  async refresh(req: Request, res: Response<LoginOutputModel>, next: NextFunction) {
+    try {
+      const { accessToken, refreshToken } = await this.authService.refresh(req.ip, req.headers["user-agent"], req.user.id, req.user.device_id);
 
-  //     res.cookie("refreshToken", refreshToken, { secure: true, httpOnly: true });
-  //     res.status(HTTP_STATUSES.SUCCESS).send({ accessToken });
-  //   } catch (error) {
-  //     return next(ApiError.UnexpectedError(error as Error));
-  //   }
-  // }
-  // async me(req: Request, res: Response<MeViewModel>, next: NextFunction) {
-  //   const user = await this.userQueryRepository.findMe(req.user.id);
+      res.cookie("refreshToken", refreshToken, { secure: true, httpOnly: true });
+      res.status(HTTP_STATUSES.SUCCESS).send({ accessToken });
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+  async me(req: Request, res: Response<any>, next: NextFunction) {
+    const user = await this.userQueryRepository.findUserById(req.user.id);
 
-  //   if (!user) {
-  //     return next(ApiError.NotFound("The requested user was not found"));
-  //   }
+    if (!user) {
+      return next(ApiError.NotFound("The requested user was not found"));
+    }
 
-  //   res.status(HTTP_STATUSES.SUCCESS).send(user);
-  // }
+    res.status(HTTP_STATUSES.SUCCESS).send(user);
+  }
   async registration(req: Request<{}, {}, UserInputModel>, res: Response, next: NextFunction) {
     try {
       const confirmationCode = await this.authService.registration(req.body);
@@ -70,73 +71,74 @@ export class AuthController {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
-  // async registrationConfirmation(req: Request<{}, {}, ConfirmationInputModel>, res: Response, next: NextFunction) {
-  //   try {
-  //     const user = await this.userQueryRepository.findUserByConfirmationCode(req.body.code);
+  async registrationConfirmation(req: Request<{}, {}, ConfirmationInputModel>, res: Response, next: NextFunction) {
+    try {
+      const user = await this.userQueryRepository.findUserByConfirmationCode(req.body.code);
 
-  //     if (!user) {
-  //       return next(ApiError.NotFound("The requested user was not found or code invalid"));
-  //     }
+      if (!user) {
+        return next(ApiError.NotFound("The requested user was not found or code invalid"));
+      }
 
-  //     await this.authService.setConfirmEmailStatus(user.id, true);
-  //     res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-  //   } catch (error) {
-  //     return next(ApiError.UnexpectedError(error as Error));
-  //   }
-  // }
-  // async registrationEmailResending(req: Request<{}, {}, EmailResendInputModel>, res: Response, next: NextFunction) {
-  //   try {
-  //     const user = await this.userQueryRepository.findUserByEmail(req.body.email);
-  //     if (!user) {
-  //       return next(ApiError.NotFound("The requested user was not found or email invalid"));
-  //     }
+      await this.authService.setConfirmEmailStatus(user.id, true);
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
 
-  //     const newConfirmationCode = await this.authService.setNewConfirmCode(user.id);
+  async registrationEmailResending(req: Request<{}, {}, EmailResendInputModel>, res: Response, next: NextFunction) {
+    try {
+      const user = await this.userQueryRepository.findUserByEmail(req.body.email);
+      if (!user) {
+        return next(ApiError.NotFound("The requested user was not found or email invalid"));
+      }
 
-  //     this.nodemailerService.sendLetter(req.body.email, newConfirmationCode, "activationAcc").catch((e) => console.log(e)); //долгий запрос с await
+      const newConfirmationCode = await this.authService.setNewConfirmCode(user.id);
 
-  //     res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-  //   } catch (error) {
-  //     return next(ApiError.UnexpectedError(error as Error));
-  //   }
-  // }
-  // async logout(req: Request<{}, {}, LoginInputModel>, res: Response<LoginOutputModel>, next: NextFunction) {
-  //   try {
-  //     await this.securityDevicesService.deleteSecurityDevice(req.user.deviceId, req.user.id);
+      this.nodemailerService.sendLetter(req.body.email, newConfirmationCode, "activationAcc").catch((e) => console.log(e)); //долгий запрос с await
 
-  //     res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-  //   } catch (error) {
-  //     return next(ApiError.UnexpectedError(error as Error));
-  //   }
-  // }
-  // async passwordRecovery(req: Request<{}, {}, EmailResendInputModel>, res: Response, next: NextFunction) {
-  //   try {
-  //     const user = await this.userQueryRepository.findUserByEmail(req.body.email);
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+  async logout(req: Request<{}, {}, LoginInputModel>, res: Response<LoginOutputModel>, next: NextFunction) {
+    try {
+      await this.securityDevicesService.deleteSecurityDevice(req.user.device_id, req.user.id);
 
-  //     if (!user) {
-  //       res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-  //       return;
-  //     }
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+  async passwordRecovery(req: Request<{}, {}, EmailResendInputModel>, res: Response, next: NextFunction) {
+    try {
+      const user = await this.userQueryRepository.findUserByEmail(req.body.email);
 
-  //     const newConfirmationCode = await this.authService.setNewRecoveryCode(user.id);
+      if (!user) {
+        res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+        return;
+      }
 
-  //     this.nodemailerService.sendLetter(req.body.email, newConfirmationCode, "recoveryPass").catch((e) => console.log(e)); //долгий запрос с await
+      const newConfirmationCode = await this.authService.setNewRecoveryCode(user.id);
 
-  //     res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-  //   } catch (error) {
-  //     return next(ApiError.UnexpectedError(error as Error));
-  //   }
-  // }
-  // async setNewPassword(req: Request<{}, {}, RecoveryPasswordInputModel>, res: Response<LoginOutputModel>, next: NextFunction) {
-  //   try {
-  //     const isUpdated = await this.authService.setNewPassword(req.body.recoveryCode, req.body.newPassword);
+      this.nodemailerService.sendLetter(req.body.email, newConfirmationCode, "recoveryPass").catch((e) => console.log(e)); //долгий запрос с await
 
-  //     if (!isUpdated) {
-  //       throw new Error("Update User password Failed");
-  //     }
-  //     res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-  //   } catch (error) {
-  //     return next(ApiError.UnexpectedError(error as Error));
-  //   }
-  // }
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+  async setNewPassword(req: Request<{}, {}, RecoveryPasswordInputModel>, res: Response<LoginOutputModel>, next: NextFunction) {
+    try {
+      const isUpdated = await this.authService.setNewPassword(req.body.recoveryCode, req.body.newPassword);
+
+      if (!isUpdated) {
+        throw new Error("Update User password Failed");
+      }
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
 }

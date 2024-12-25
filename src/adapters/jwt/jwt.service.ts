@@ -5,7 +5,7 @@ import { SETTINGS } from "../../settings";
 
 type JwtPayload = {
   user_id: string;
-  deviceId: string;
+  device_id: string;
 };
 
 @injectable()
@@ -26,9 +26,9 @@ export class JwtService {
       return null;
     }
   }
-  async verifyAccessToken(token: string): Promise<{ user_id: string; deviceId: string } | null> {
+  async verifyAccessToken(token: string): Promise<{ user_id: string; device_id: string } | null> {
     try {
-      return jwt.verify(token, SETTINGS.JWT_ACCESS_SECRET) as { user_id: string; deviceId: string };
+      return jwt.verify(token, SETTINGS.JWT_ACCESS_SECRET) as { user_id: string; device_id: string };
     } catch (error) {
       console.error("Token verify some error");
       return null;

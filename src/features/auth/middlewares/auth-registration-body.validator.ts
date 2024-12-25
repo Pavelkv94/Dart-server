@@ -1,5 +1,9 @@
 import { body } from "express-validator";
 import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrors.middleware";
+import { container } from "../../../composition.root";
+import { UserQueryRepository } from "../../users/repositories/users.query-repository";
+
+const userQueryRepository = container.resolve(UserQueryRepository);
 
 const login = body("login")
   .notEmpty()
@@ -8,14 +12,14 @@ const login = body("login")
   .withMessage("not string")
   .isLength({ min: 3, max: 10 })
   .withMessage("must be from 3 to 10 symbols")
-  // .custom(async (login) => {
-  //   const isUnique = await isUserUniqueField({ login });
-  //   if (!isUnique) {
-  //     throw new Error("Login must be unique");
-  //   }
-  //   return true;
-  // });
-  
+  .custom(async (login) => {
+    const user = await userQueryRepository.findUserByLogin(login);
+    if (user) {
+      throw new Error("Login must be unique");
+    }
+    return true;
+  });
+
 const password = body("password")
   .notEmpty()
   .withMessage("password is required")
@@ -30,12 +34,12 @@ const userEmailInputValidator = body("email")
   .trim()
   .isEmail()
   .withMessage("Invalid email")
-  // .custom(async (email) => {
-  //   const isUnique = await isUserUniqueField({ email });
-  //   if (!isUnique) {
-  //     throw new Error("Email must be unique");
-  //   }
-  //   return true;
-  // });
+  .custom(async (email) => {
+    const user = await userQueryRepository.findUserByEmail(email);
+    if (user) {
+      throw new Error("Email must be unique");
+    }
+    return true;
+  });
 
 export const authRegistrationBodyValidators = [login, password, userEmailInputValidator, inputCheckErrorsMiddleware];

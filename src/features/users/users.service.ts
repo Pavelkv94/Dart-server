@@ -7,6 +7,7 @@ import { UserInputModel, UserNode } from "./domain/users.models";
 // import { UserModel } from "../domain/User.entity";
 import { injectable } from "inversify";
 import { UserRepository } from "./repositories/users.repository";
+import { getExpirationDate } from "../../utils/date/getExpirationDate";
 
 @injectable()
 export class UserService {
@@ -27,27 +28,21 @@ export class UserService {
       password: passwordhash,
       createdAt: new Date().toISOString(),
       confirmationCode: randomUUID(),
+      confirmationStatus: false,
+      confirmationCodeExpirationDate: getExpirationDate(30),
+      recoveryCode: "",
+      recoveryCodeExpirationDate: "",
       name: DatabaseAvailableLabels.USER,
-      id: randomUUID()
+      id: randomUUID(),
     };
 
     const user = await this.userRepository.create(newUser);
 
     return user;
   }
-  async updateUserPass(user_id: string, newPass: string): Promise<boolean> {
+  async updateUserPass(user_id: string, newPass: string): Promise<void> {
     const passwordhash = await this.bcryptService.generateHash(newPass);
-
-    const userDocument = await this.userRepository.findUserById(user_id);
-    if (!userDocument) {
-      return false;
-    }
-
-    // userDocument.setNewPassword(passwordhash);
-
-    const userId = await this.userRepository.save(userDocument);
-
-    return !!userId;
+    await this.userRepository.update(user_id, { password: passwordhash });
   }
   async deleteUser(id: string): Promise<boolean> {
     const isDeleted = await this.userRepository.deleteUser(id);

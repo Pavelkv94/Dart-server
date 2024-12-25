@@ -30,7 +30,7 @@ export const authAccessTokenMiddleware = async (req: Request, res: Response, nex
     return next(ApiError.Unauthorized("Unauthorized"));
   }
 
-  req.user = { id: payload.user_id, deviceId: payload.deviceId };
+  req.user = { id: payload.user_id, device_id: payload.device_id };
 
   next();
 };
