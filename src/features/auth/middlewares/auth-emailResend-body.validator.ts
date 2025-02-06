@@ -12,13 +12,13 @@ const userEmailInputValidator = body("email")
   .isEmail()
   .withMessage("Invalid email")
   .custom(async (email) => {
-    const isConfirmed = await userQueryRepository.findEmailConfirmationByEmail(email);
+    const userNode = await userQueryRepository.findEmailConfirmationByEmail(email);
 
-    if (!isConfirmed) {
+    if (!userNode) {
       throw new Error("User not exist");
     }
 
-    if (isConfirmed) {
+    if (userNode.confirmationStatus as boolean) {
       throw new Error("Email is already confirmed");
     }
     return true;

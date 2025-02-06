@@ -2,15 +2,21 @@ import { injectable } from "inversify";
 import { UserNode, UsersValidInputQueryModel } from "../domain/users.models";
 import { DatabaseAvailableLabels } from "../../../db/database.labels";
 import { db } from "../../../db/database";
+import { UserViewDto } from "./dto";
 
 @injectable()
 export class UserQueryRepository {
   async findAllUsers(query: UsersValidInputQueryModel): Promise<any> {
-    // const { pageSize, pageNumber, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } = query;
+    const { pageSize, pageNumber, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } = query;
 
+    const users = await db.findNodes("MATCH (n:USER) WHERE n.deletedAt IS NULL RETURN n", {});
+
+    const usersCount = await db.getNodesCount(DatabaseAvailableLabels.USER, {});
+
+    // return users;
     // let filter: any = {
     //   $or: [],
-    // };
+    // };usersCount
 
     // if (searchLoginTerm) {
     //   filter.$or.push({ login: { $regex: searchLoginTerm, $options: "i" } });
@@ -32,36 +38,21 @@ export class UserQueryRepository {
 
     // const usersCount = await this.getUsersCount(searchLoginTerm, searchEmailTerm);
 
-    // return {
-    //   pagesCount: Math.ceil(usersCount / query.pageSize),
-    //   page: query.pageNumber,
-    //   pageSize: query.pageSize,
-    //   totalCount: usersCount,
-    //   items: usersView,
-    // };
-    return "users";
+    return {
+      pagesCount: Math.ceil(usersCount.low / query.pageSize),
+      page: query.pageNumber,
+      pageSize: query.pageSize,
+      totalCount: usersCount.low,
+      items: users,
+    };
   }
-  async getUsersCount(searchLoginTerm: string, searchEmailTerm: string): Promise<any> {
-    // let filter: any = {
-    //   $or: [],
-    // };
-    // if (searchLoginTerm) {
-    //   filter.$or.push({ login: { $regex: searchLoginTerm, $options: "i" } });
-    // }
-    // if (searchEmailTerm) {
-    //   filter.$or.push({ email: { $regex: searchEmailTerm, $options: "i" } });
-    // }
-    // if (filter.$or.length === 0) {
-    //   filter = {};
-    // }
-    // return UserModel.countDocuments(filter);
-  }
-  async findUserById(id: string): Promise<UserNode | null> {
+
+  async findUserById(id: string): Promise<UserViewDto | null> {
     const userDocument = await db.findNodeByField(DatabaseAvailableLabels.USER, { id });
     if (!userDocument) {
       return null;
     }
-    return userDocument;
+    return UserViewDto.mapToView(userDocument);
   }
 
   async findUserByLogin(login: string): Promise<any | null> {
@@ -87,6 +78,7 @@ export class UserQueryRepository {
     }
     return userNode;
   }
+
   async findUserConfirmationByCode(code: string): Promise<UserNode | null> {
     const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { confirmationCode: code });
     if (!userNode) {
@@ -94,12 +86,12 @@ export class UserQueryRepository {
     }
     return userNode;
   }
-  async findEmailConfirmationByEmail(email: string): Promise<boolean | null> {
+  async findEmailConfirmationByEmail(email: string): Promise<UserNode | null> {
     const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { email });
     if (!userNode) {
       return null;
     }
-    return userNode.confirmationStatus;
+    return userNode;
   }
   async findRecoveryByCode(code: string): Promise<any> {
     const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { recoveryCode: code });

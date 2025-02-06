@@ -53,7 +53,7 @@ export class Database {
     try {
       const searchCritety = Object.keys(param).map((el) => `n.${el} = "${param[el]}"`)[0];
 
-      const query = `MATCH (n:${label}) WHERE ${searchCritety} RETURN n`;
+      const query = `MATCH (n:${label}) WHERE ${searchCritety} AND n.deletedAt IS NULL RETURN n`;
 
       const result = await session.run(query, param);
 
@@ -104,6 +104,19 @@ export class Database {
       const nodes = result.records.map((record) => record.get("n").properties);
 
       return nodes;
+    } catch (error: any) {
+      console.error("Error find node:", error);
+      throw new Error(`Failed to find node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async getNodesCount(label: DatabaseAvailableLabels, params: Record<string, any>) {
+    const session = this.getSession();
+    try {
+      const result = await session.run(`MATCH (n:${label}) WHERE n.deletedAt IS NULL RETURN count(n)`, params);
+      return result.records[0].get("count(n)");
     } catch (error: any) {
       console.error("Error find node:", error);
       throw new Error(`Failed to find node: ${error.message}`);

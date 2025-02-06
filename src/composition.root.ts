@@ -36,6 +36,7 @@ container.bind(UserQueryRepository).to(UserQueryRepository);
 container.bind(UserService).to(UserService);
 container.bind(UserController).to(UserController);
 
+
 // container.bind(BlogRepository).to(BlogRepository);
 // container.bind(BlogQueryRepository).to(BlogQueryRepository);
 // container.bind(BlogService).to(BlogService);

@@ -6,13 +6,13 @@ import { hasDateExpired } from "../../../utils/date/hasDateExpired";
 
 const code = body("recoveryCode").custom(async (code) => {
   const userQueryRepository = container.resolve(UserQueryRepository);
-  const recoveryConfirmation = await userQueryRepository.findRecoveryByCode(code);
+  const userNode = await userQueryRepository.findRecoveryByCode(code);
 
-  if (!recoveryConfirmation) {
+  if (!userNode) {
     throw new Error("The requested user was not found or code invalid");
   }
 
-  if (!recoveryConfirmation.expirationDate || hasDateExpired(recoveryConfirmation.expirationDate)) {
+  if (!userNode.recoveryCodeExpirationDate || hasDateExpired(userNode.recoveryCodeExpirationDate)) {
     throw new Error("Your recovery link is expired. Resend recovery email.");
   }
   return true;

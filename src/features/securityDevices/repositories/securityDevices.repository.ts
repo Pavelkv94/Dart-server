@@ -42,8 +42,11 @@ export class SecurityDeviceRepository {
     await db.deleteNode(query, { device_id, user_id });
   }
   async deleteDevice(device_id: string, user_id: string): Promise<void> {
-    const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE}) WHERE n.user_id = $user_id AND n.device_id = $device_id DETACH DELETE n`;
 
-    await db.deleteNode(query, { device_id, user_id });
+    // const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE}) WHERE n.user_id = $user_id AND n.device_id = $device_id DETACH DELETE n`;
+
+    // await db.deleteNode(query, { device_id, user_id });
+    await db.updateNodeByField(DatabaseAvailableLabels.SECURITY_DEVICE, { device_id, user_id }, { deletedAt: new Date().toISOString() });
+
   }
 }

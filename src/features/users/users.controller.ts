@@ -3,7 +3,7 @@ import { injectable } from "inversify";
 import { ApiError } from "../../exeptions/api-error";
 import { OutputDataWithPagination, SortDirection } from "../../types/common-types";
 import { HTTP_STATUSES } from "../../types/enums";
-import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel } from "./domain/users.models";
+import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel, UserUpdateInputModel } from "./domain/users.models";
 import { UserQueryRepository } from "./repositories/users.query-repository";
 import { UserService } from "./users.service";
 import { AuthService } from "../auth/auth.service";
@@ -29,6 +29,20 @@ export class UserController {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
+
+  async getUser(req: Request<URIParamsUserModel>, res: Response<UserViewModel>, next: NextFunction) {
+    try {
+      const user = await this.userQueryRepository.findUserById(req.params.id);
+
+      if (!user) {
+        return next(ApiError.NotFound("The requested user was not found"));
+      }
+
+      res.status(HTTP_STATUSES.SUCCESS).json(user);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
   async createUser(req: Request<{}, {}, UserInputModel>, res: Response<UserViewModel>, next: NextFunction) {
     try {
       const newUser = await this.userService.create(req.body);
@@ -44,15 +58,21 @@ export class UserController {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
+
+  async updateUser(req: Request<URIParamsUserModel, {}, any>, res: Response, next: NextFunction) {
+    try {
+      console.log("req.body - ", req.body);
+      await this.userService.updateUser(req.params.id, req.body);
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
   async deleteUser(req: Request<URIParamsUserModel>, res: Response, next: NextFunction) {
     try {
-      const isDeletedUser = await this.userService.deleteUser(req.params.id);
+      await this.userService.deleteUser(req.params.id);
 
-      if (!isDeletedUser) {
-        return next(ApiError.NotFound("The requested user was not found"));
-      } else {
-        res.sendStatus(HTTP_STATUSES.NO_CONTENT);
-      }
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
     } catch (error) {
       return next(ApiError.UnexpectedError(error as Error));
     }

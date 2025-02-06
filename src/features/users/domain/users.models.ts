@@ -41,6 +41,25 @@ export type UserInputModel = {
   email: string;
 };
 
+export type UserUpdateInputModel = {
+  email: string;
+  login: string;
+  createdAt: string;
+  first_name: string;
+  last_name: string;
+  status: string;
+  photo: string;
+  background: string;
+  country: string;
+  birthday: string;
+  contacts: Array<string>[];
+  about: string;
+  education: string;
+  work: string;
+  gender?: string;
+  friends: Array<string>;
+};
+
 export type URIParamsUserModel = {
   id: string;
 };
@@ -75,4 +94,24 @@ export type UserNode = {
   recoveryCode: string;
   recoveryCodeExpirationDate: string;
   name: DatabaseAvailableLabels;
+  first_name: string;
+  last_name: string;
+  status: string;
+  photo: string;
+  background: string;
+  country: string;
+  birthday: string;
+  about: string;
+  education: string;
+  work: string;
+  gender: string;
+  facebook: string;
+  youtube: string;
+  vk: string;
+  instagram: string;
+  linkedin: string;
+  twitter: string;
+  telegram: string;
+  friends: string[];
+
 };

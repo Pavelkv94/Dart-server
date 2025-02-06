@@ -16,21 +16,21 @@ export class UserRepository {
     return response;
   }
   async findUserById(id: string): Promise<UserNode | null> {
-    const userDocument = await db.findNodeByField(DatabaseAvailableLabels.USER, { id });
-    if (!userDocument) {
+    const userNode = await db.findNodeByField(DatabaseAvailableLabels.USER, { id });
+    if (!userNode) {
       return null;
     }
-    return userDocument;
+    return userNode;
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserNode | null> {
     const query = `MATCH (n:${DatabaseAvailableLabels.USER}) WHERE n.email = $loginOrEmail OR n.login = $loginOrEmail RETURN n`;
 
-    const userDocument = await db.findNodeWithOptionalParams(query, { loginOrEmail });
-    if (!userDocument) {
+    const userNode = await db.findNodeWithOptionalParams(query, { loginOrEmail });
+    if (!userNode) {
       return null;
     }
-    return userDocument;
+    return userNode;
   }
 
   async findUserByRecoveryCode(code: string): Promise<string | null> {
@@ -40,9 +40,7 @@ export class UserRepository {
     }
     return userNode.id;
   }
-  async deleteUser(id: string): Promise<boolean> {
-    // const result = await UserModel.deleteOne({ _id: id });
-    // return result.deletedCount > 0;
-    return false;
+  async markUserAsDeleted(id: string): Promise<void> {
+    await db.updateNodeByField(DatabaseAvailableLabels.USER, { id }, { deletedAt: new Date().toISOString() });
   }
 }

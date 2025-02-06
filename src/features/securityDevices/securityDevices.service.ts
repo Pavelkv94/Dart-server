@@ -30,6 +30,7 @@ export class SecurityDeviceService {
       expirationDate: refreshToken.exp,
       title: userAgent,
       ip: ip,
+      deletedAt: null,
     };
     await this.securityDeviceRepository.updateDevice(refreshToken.device_id, payload);
   }

@@ -23,5 +23,8 @@ usersRouter.get(
   inputCheckErrorsMiddleware,
   userController.getUsers.bind(userController)
 );
-usersRouter.post("/", authAccessTokenMiddleware, userBodyValidators, userController.createUser.bind(userController));
-usersRouter.delete("/:id", authAccessTokenMiddleware, findUserMiddleware, userController.deleteUser.bind(userController));
+usersRouter.get("/:id", authAccessTokenMiddleware, findUserMiddleware, userController.getUser.bind(userController));
+usersRouter.put("/:id", authAccessTokenMiddleware, findUserMiddleware, userController.updateUser.bind(userController));
+
+usersRouter.post("/", adminMiddleware, userBodyValidators, userController.createUser.bind(userController));
+usersRouter.delete("/:id", adminMiddleware, findUserMiddleware, userController.deleteUser.bind(userController));

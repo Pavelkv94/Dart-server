@@ -11,8 +11,8 @@ type JwtPayload = {
 @injectable()
 export class JwtService {
   async generateTokens(payload: JwtPayload): Promise<any> {
-    const accessToken = jwt.sign(payload, SETTINGS.JWT_ACCESS_SECRET, { expiresIn: "5m" });
-    const refreshToken = jwt.sign(payload, SETTINGS.JWT_REFRESH_SECRET, { expiresIn: "10m" });
+    const accessToken = jwt.sign(payload, SETTINGS.JWT_ACCESS_SECRET, { expiresIn: "50m" });
+    const refreshToken = jwt.sign(payload, SETTINGS.JWT_REFRESH_SECRET, { expiresIn: "60m" });
     return {
       accessToken,
       refreshToken,

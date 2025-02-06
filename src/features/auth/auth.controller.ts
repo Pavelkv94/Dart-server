@@ -16,6 +16,7 @@ import { UserInputModel } from "../users/domain/users.models";
 import { injectable } from "inversify";
 import { HTTP_STATUSES } from "../../types/enums";
 import { SecurityDeviceService } from "../securityDevices/securityDevices.service";
+import { InjectedUserType } from "./middlewares/auth-refreshToken.middleware";
 
 @injectable()
 export class AuthController {
@@ -102,7 +103,7 @@ export class AuthController {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
-  async logout(req: Request<{}, {}, LoginInputModel>, res: Response<LoginOutputModel>, next: NextFunction) {
+  async logout(req: Request<{}, {}, InjectedUserType>, res: Response<LoginOutputModel>, next: NextFunction) {
     try {
       await this.securityDevicesService.deleteSecurityDevice(req.user.device_id, req.user.id);
 

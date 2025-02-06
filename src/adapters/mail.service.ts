@@ -1,8 +1,8 @@
 import { injectable } from "inversify";
 import nodemailer from "nodemailer";
+import { container } from "../composition.root";
 
 type MailPurposeType = "activationAcc" | "recoveryPass";
-
 @injectable()
 export class NodemailerService {
   async sendLetter(email: string, confirmationCode: string, purpose: MailPurposeType): Promise<void> {

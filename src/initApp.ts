@@ -4,7 +4,7 @@ import { HTTP_STATUSES } from "./types/enums";
 import cookieParser from "cookie-parser";
 import { config } from "dotenv";
 import { SETTINGS } from "./settings";
-import { Database } from "./db/Database.interface";
+import { Database } from "./db/database.interface";
 import { authRouter } from "./features/auth/auth.router";
 import { testingRouter } from "./features/testing/testing.router";
 import { usersRouter } from "./features/users/users.router";
