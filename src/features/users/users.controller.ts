@@ -3,7 +3,7 @@ import { injectable } from "inversify";
 import { ApiError } from "../../exeptions/api-error";
 import { OutputDataWithPagination, SortDirection } from "../../types/common-types";
 import { HTTP_STATUSES } from "../../types/enums";
-import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel, UserUpdateInputModel } from "./domain/users.models";
+import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel } from "./domain/users.models";
 import { UserQueryRepository } from "./repositories/users.query-repository";
 import { UserService } from "./users.service";
 import { AuthService } from "../auth/auth.service";
@@ -59,15 +59,29 @@ export class UserController {
     }
   }
 
-  async updateUser(req: Request<URIParamsUserModel, {}, any>, res: Response, next: NextFunction) {
+  async updateUser(req: Request<{}, {}, any>, res: Response, next: NextFunction) {
     try {
-      console.log("req.body - ", req.body);
-      await this.userService.updateUser(req.params.id, req.body);
+      await this.userService.updateUser(req.user.id, req.body);
       res.sendStatus(HTTP_STATUSES.NO_CONTENT);
     } catch (error) {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
+
+  async uploadUserPhoto(req: Request<{}, {}, { image: any }>, res: Response, next: NextFunction) {
+    try {
+      if (req.file) {
+        const filePath = `/storage/${req.user.id}${req.file.originalname.slice(-4)}`;
+        await this.userService.updateUser(req.user.id, { photo: filePath });
+        res.status(200).json({ photoUrl: filePath });
+      } else {
+        return next(ApiError.BadRequest("Ошибка загрузки файла"));
+      }
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+
   async deleteUser(req: Request<URIParamsUserModel>, res: Response, next: NextFunction) {
     try {
       await this.userService.deleteUser(req.params.id);

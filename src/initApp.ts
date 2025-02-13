@@ -10,6 +10,7 @@ import { testingRouter } from "./features/testing/testing.router";
 import { usersRouter } from "./features/users/users.router";
 import { errorHandlerMiddleware } from "./global-middlewares/error-handler.middleware";
 import { securityDevicesRouter } from "./features/securityDevices/securityDevices.router";
+import path from "path";
 
 // import { SETTINGS } from "./settings";
 // import { postsRouter } from "./features/posts/posts.router";
@@ -37,6 +38,8 @@ export const initApp = () => {
   app.get("/", (req, res) => {
     res.status(HTTP_STATUSES.SUCCESS).json({ version: "1.1" });
   });
+
+  app.use("/storage", express.static(path.join(__dirname, "../storage")));
 
   app.use(SETTINGS.PATH.AUTH, authRouter);
   // app.use(SETTINGS.PATH.BLOGS, blogsRouter);

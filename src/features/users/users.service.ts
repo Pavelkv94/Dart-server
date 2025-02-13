@@ -5,6 +5,7 @@ import { UserInputModel, UserNode } from "./domain/users.models";
 import { injectable } from "inversify";
 import { UserRepository } from "./repositories/users.repository";
 import { getExpirationDate } from "../../utils/date/getExpirationDate";
+// import { FileSaverService } from "../../adapters/fileSaver.service";
 
 @injectable()
 export class UserService {
@@ -52,13 +53,22 @@ export class UserService {
     return user;
   }
 
-  async updateUser(user_id: string, payload: UserInputModel): Promise<void> {
+  async updateUser(user_id: string, payload: any): Promise<void> {
     await this.userRepository.update(user_id, payload);
   }
   async updateUserPass(user_id: string, newPass: string): Promise<void> {
     const passwordhash = await this.bcryptService.generateHash(newPass);
     await this.userRepository.update(user_id, { password: passwordhash });
   }
+
+  async uploadUserPhoto(user_id: string, file: Express.Multer.File): Promise<void> {
+      // Save the file and get the file path
+      // const filePath = await this.fileSaverService.saveFile(user_id, file);
+
+      // Update the user's photo path in the database
+      // await this.userRepository.update(user_id, { photo: filePath });
+  }
+
   async deleteUser(id: string): Promise<void> {
     await this.userRepository.markUserAsDeleted(id);
   }
