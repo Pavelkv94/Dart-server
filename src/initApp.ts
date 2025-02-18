@@ -11,6 +11,7 @@ import { usersRouter } from "./features/users/users.router";
 import { errorHandlerMiddleware } from "./global-middlewares/error-handler.middleware";
 import { securityDevicesRouter } from "./features/securityDevices/securityDevices.router";
 import path from "path";
+import { postsRouter } from "./features/posts/posts.router";
 
 // import { SETTINGS } from "./settings";
 // import { postsRouter } from "./features/posts/posts.router";
@@ -43,7 +44,7 @@ export const initApp = () => {
 
   app.use(SETTINGS.PATH.AUTH, authRouter);
   // app.use(SETTINGS.PATH.BLOGS, blogsRouter);
-  // app.use(SETTINGS.PATH.POSTS, postsRouter);
+  app.use(SETTINGS.PATH.POSTS, postsRouter);
   app.use(SETTINGS.PATH.USERS, usersRouter);
   // app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
   app.use(SETTINGS.PATH.SECURITY, securityDevicesRouter);

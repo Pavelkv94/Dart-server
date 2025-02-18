@@ -1,29 +1,31 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiError } from "../../../exeptions/api-error";
+import { ApiLogInputModel } from "../../apiLogs/models/apiLog.model";
+import { container } from "../../../composition.root";
+import { ApiLogsService } from "../../apiLogs/apiLogs.service";
 
 export const rateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  // const newAPiLog: ApiLogInputModel = {
-  //   ip: req.ip || "",
-  //   URL: req.originalUrl || req.baseUrl,
-  //   date: new Date(),
-  // };
+  const apiLogsService = container.resolve(ApiLogsService);
 
-  // const logId = await apiLogsService.saveLog(newAPiLog);
-  // if (!logId) {
-  //   console.log("Something wrong with api log saving.");
-  // }
+  const newAPiLog: ApiLogInputModel = {
+    ip: req.ip || "",
+    URL: req.originalUrl || req.baseUrl,
+    date: new Date().getTime(),
+  };
 
-  // const rateLimitOptions = {
-  //   ip: req.ip || "",
-  //   baseUrl: req.originalUrl || req.baseUrl,
-  //   limit: 5, //attempts
-  //   rate: 10, //time interval
-  // };
+  await apiLogsService.saveLog(newAPiLog);
 
-  // const isAllowedRequest = await apiLogsService.checkRateLimit(rateLimitOptions);
+  const rateLimitOptions = {
+    ip: req.ip || "",
+    baseUrl: req.originalUrl || req.baseUrl,
+    limit: 5, //attempts
+    rate: 10, //time interval
+  };
 
-  // if (!isAllowedRequest) {
-  //   return next(ApiError.TooManyRequests());
-  // }
+  const isAllowedRequest = await apiLogsService.checkRateLimit(rateLimitOptions);
+
+  if (!isAllowedRequest) {
+    return next(ApiError.TooManyRequests());
+  }
   next();
 };

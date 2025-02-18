@@ -43,7 +43,7 @@ export class UserQueryRepository {
       page: query.pageNumber,
       pageSize: query.pageSize,
       totalCount: usersCount.low,
-      items: users,
+      items: users.map((user) => UserViewDto.mapToView(user.n)),
     };
   }
 

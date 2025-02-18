@@ -92,7 +92,7 @@ export class Database {
     }
   }
 
-  async findNodes(query: string, params: Record<string, any>) {
+  async findNodes(query: string, params: Record<string, any>): Promise<any[]> {
     const session = this.getSession();
     try {
       const result = await session.run(query, params);
@@ -101,8 +101,10 @@ export class Database {
         return [];
       }
 
-      const nodes = result.records.map((record) => record.get("n").properties);
-
+      const nodes = result.records.map((record) => record.keys.reduce((acc: any, key) => {
+        acc[key] = record.get(key).properties;
+        return acc;
+      }, {}));
       return nodes;
     } catch (error: any) {
       console.error("Error find node:", error);
