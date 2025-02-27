@@ -9,20 +9,21 @@ import { PostQueryRepository } from "./repositories/posts.query-repository";
 export class PostController {
   constructor(private readonly postService: PostService, private readonly postQueryRepository: PostQueryRepository) {}
 
-  async getAllPosts(req: Request<{}, {}, {}, { page: number; pageSize: number }>, res: Response, next: NextFunction) {
+  async getAllPosts(req: Request<{}, {}, {}, { pageNumber: string; pageSize: string }>, res: Response, next: NextFunction) {
     try {
-      const { page, pageSize } = req.query;
-      const posts = await this.postQueryRepository.getAllPosts(page, pageSize);
+      const { pageNumber, pageSize } = req.query;
+      const posts = await this.postQueryRepository.getAllPosts(pageNumber, pageSize);
       res.status(200).json(posts);
     } catch (error) {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
 
-  async getUserPosts(req: Request<{ user_id: string }, {}, {}, { page: number; pageSize: number }>, res: Response, next: NextFunction) {
+  async getUserPosts(req: Request<{ user_id: string }, {}, {}, { pageNumber: string; pageSize: string }>, res: Response, next: NextFunction) {
     try {
-      const { page, pageSize } = req.query;
-      const posts = await this.postQueryRepository.getUserPosts(req.params.user_id, page, pageSize);
+      const { pageNumber, pageSize } = req.query;
+
+      const posts = await this.postQueryRepository.getUserPosts(req.params.user_id, pageNumber, pageSize);
       res.status(200).json(posts);
     } catch (error) {
       return next(ApiError.UnexpectedError(error as Error));
@@ -31,7 +32,8 @@ export class PostController {
 
   async createPost(req: Request<{}, {}, PostInputModel>, res: Response, next: NextFunction) {
     try {
-      const newPost = this.postService.createPost(req.body, req.user.id);
+      const newPostId = await this.postService.createPost(req.body, req.user.id);
+      const newPost = await this.postQueryRepository.getPostById(newPostId);
       res.status(201).json(newPost);
     } catch (error) {
       return next(ApiError.UnexpectedError(error as Error));

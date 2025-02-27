@@ -110,3 +110,13 @@ export type UserNode = {
   telegram: string;
   friends: string[];
 };
+
+export enum ContactActionType {
+  FOLLOW = "follow",
+  UNFOLLOW = "unfollow",
+}
+
+export type ContactInputModel = {
+  action: ContactActionType;
+  targetUserId: string;
+};

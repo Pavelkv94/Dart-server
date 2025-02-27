@@ -8,4 +8,5 @@ export enum DatabaseAvailableLabels {
 export enum DatabaseAvailableRelations {
   DEVICE = "DEVICE",
   USER_POST = "USER_POST",
+  FRIEND = "FRIEND",
 }

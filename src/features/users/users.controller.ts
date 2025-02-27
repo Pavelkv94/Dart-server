@@ -3,7 +3,7 @@ import { injectable } from "inversify";
 import { ApiError } from "../../exeptions/api-error";
 import { OutputDataWithPagination, SortDirection } from "../../types/common-types";
 import { HTTP_STATUSES } from "../../types/enums";
-import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel } from "./domain/users.models";
+import { UsersInputQueryModel, UserViewModel, UsersValidInputQueryModel, UserInputModel, URIParamsUserModel, ContactInputModel } from "./domain/users.models";
 import { UserQueryRepository } from "./repositories/users.query-repository";
 import { UserService } from "./users.service";
 import { AuthService } from "../auth/auth.service";
@@ -22,7 +22,7 @@ export class UserController {
         searchLoginTerm: req.query.searchLoginTerm,
         searchEmailTerm: req.query.searchEmailTerm,
       };
-      const users = await this.userQueryRepository.findAllUsers(queryData);
+      const users = await this.userQueryRepository.findAllUsers(queryData, req.user.id);
 
       res.status(HTTP_STATUSES.SUCCESS).json(users);
     } catch (error) {
@@ -86,6 +86,15 @@ export class UserController {
     try {
       await this.userService.deleteUser(req.params.id);
 
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT);
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+
+  async setContactAction(req: Request<{}, {}, ContactInputModel>, res: Response, next: NextFunction) {
+    try {
+      await this.userService.setContactAction(req.user.id, req.body);
       res.sendStatus(HTTP_STATUSES.NO_CONTENT);
     } catch (error) {
       return next(ApiError.UnexpectedError(error as Error));

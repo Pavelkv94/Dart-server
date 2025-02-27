@@ -1,8 +1,6 @@
 import neo4j, { Driver, Session } from "neo4j-driver";
 import { DatabaseAvailableLabels } from "./database.labels";
 import { MatchNodesDtoType } from "./db.types";
-import { UserNode } from "../features/users/domain/users.models";
-import { DeviceNode } from "../features/securityDevices/models/securityDevices.model";
 
 export class Database {
   private driver: Driver | null = null;
@@ -101,10 +99,12 @@ export class Database {
         return [];
       }
 
-      const nodes = result.records.map((record) => record.keys.reduce((acc: any, key) => {
-        acc[key] = record.get(key).properties;
-        return acc;
-      }, {}));
+      const nodes = result.records.map((record) =>
+        record.keys.reduce((acc: any, key) => {
+          acc[key] = record.get(key).properties;
+          return acc;
+        }, {})
+      );
       return nodes;
     } catch (error: any) {
       console.error("Error find node:", error);
@@ -114,7 +114,49 @@ export class Database {
     }
   }
 
-  async getNodesCount(label: DatabaseAvailableLabels, params: Record<string, any>) {
+  //for friends
+  async findNodesWithRelation(query: string, params: Record<string, any>): Promise<any[]> {
+    const session = this.getSession();
+    try {
+      const result = await session.run(query, params);
+
+      if (result.records.length === 0) {
+        return [];
+      }
+
+      const nodes = result.records.map((record) => {
+        const node = record.keys.reduce((acc: any, key) => {
+          acc[key] = record.get(key).properties;
+          return acc;
+        }, {});
+        if (record.get("isFriend")) {
+          node.isFriend = record.get("isFriend");
+        }
+        return node;
+      });
+      return nodes;
+    } catch (error: any) {
+      console.error("Error find node:", error);
+      throw new Error(`Failed to find node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async findNodesTotalCountWithOptionalQuery(query: string, params: Record<string, any>) {
+    const session = this.getSession();
+    try {
+      const result = await session.run(query, params);
+      return result.records[0].get("totalCount");
+    } catch (error: any) {
+      console.error("Error find node:", error);
+      throw new Error(`Failed to find node: ${error.message}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async getDefaultNodesCount(label: DatabaseAvailableLabels, params: Record<string, any>) {
     const session = this.getSession();
     try {
       const result = await session.run(`MATCH (n:${label}) WHERE n.deletedAt IS NULL RETURN count(n)`, params);
@@ -207,6 +249,25 @@ export class Database {
       throw new Error(`Failed to build relations: ${error.message}`);
     } finally {
       await session.close();
+    }
+  }
+
+  async disconnectNodes(matchDto: MatchNodesDtoType) {
+    const session = this.getSession();
+    try {
+      const query = `
+        MATCH (n1:${matchDto.label1} {${matchDto.property1}: $value1})-[r:${matchDto.relation}]->(n2:${matchDto.label2} {${matchDto.property2}: $value2})
+        DELETE r
+        RETURN n1, n2
+      `;
+
+      await session.run(query, {
+        value1: matchDto.value1,
+        value2: matchDto.value2,
+      });
+    } catch (error: any) {
+      console.error("Error disconnect nodes:", error);
+      throw new Error(`Failed to disconnect nodes: ${error.message}`);
     }
   }
 

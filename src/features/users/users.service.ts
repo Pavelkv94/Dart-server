@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { BcryptService } from "../../adapters/bcrypt.service";
 import { DatabaseAvailableLabels } from "../../db/database.labels";
-import { UserInputModel, UserNode } from "./domain/users.models";
+import { ContactInputModel, UserInputModel, UserNode } from "./domain/users.models";
 import { injectable } from "inversify";
 import { UserRepository } from "./repositories/users.repository";
 import { getExpirationDate } from "../../utils/date/getExpirationDate";
@@ -62,14 +62,17 @@ export class UserService {
   }
 
   async uploadUserPhoto(user_id: string, file: Express.Multer.File): Promise<void> {
-      // Save the file and get the file path
-      // const filePath = await this.fileSaverService.saveFile(user_id, file);
-
-      // Update the user's photo path in the database
-      // await this.userRepository.update(user_id, { photo: filePath });
+    // Save the file and get the file path
+    // const filePath = await this.fileSaverService.saveFile(user_id, file);
+    // Update the user's photo path in the database
+    // await this.userRepository.update(user_id, { photo: filePath });
   }
 
   async deleteUser(id: string): Promise<void> {
     await this.userRepository.markUserAsDeleted(id);
+  }
+
+  async setContactAction(user_id: string, actionBody: ContactInputModel): Promise<void> {
+    await this.userRepository.setContactAction(user_id, actionBody);
   }
 }

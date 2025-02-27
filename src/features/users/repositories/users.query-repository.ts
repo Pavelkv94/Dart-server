@@ -6,12 +6,26 @@ import { UserViewDto } from "./dto";
 
 @injectable()
 export class UserQueryRepository {
-  async findAllUsers(query: UsersValidInputQueryModel): Promise<any> {
+  async findAllUsers(query: UsersValidInputQueryModel, user_id: string): Promise<any> {
+    
     const { pageSize, pageNumber, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } = query;
+    console.log("user_id ", user_id);
+    // const users = await db.findNodes("MATCH (n:USER) WHERE n.deletedAt IS NULL AND n.id <> $userId OPTIONAL MATCH (n)-[r:FRIEND]->(f:USER {id: $userId}) RETURN n, r", {
+    //   userId: user_id,
+    // });
 
-    const users = await db.findNodes("MATCH (n:USER) WHERE n.deletedAt IS NULL RETURN n", {});
+    const users = await db.findNodesWithRelation(`
+      MATCH (cu:USER {id: $userId})
+      MATCH (n:USER)
+      WHERE n.deletedAt IS NULL AND n.id <> $userId
+      OPTIONAL MATCH (cu)-[r:FRIEND]-(n)
+      RETURN n, CASE WHEN r IS NOT NULL THEN true ELSE false END AS isFriend
+      `, {
+      userId: user_id,
+    });
 
-    const usersCount = await db.getNodesCount(DatabaseAvailableLabels.USER, {});
+    
+    const usersCount = await db.getDefaultNodesCount(DatabaseAvailableLabels.USER, {});
 
     // return users;
     // let filter: any = {
@@ -43,7 +57,7 @@ export class UserQueryRepository {
       page: query.pageNumber,
       pageSize: query.pageSize,
       totalCount: usersCount.low,
-      items: users.map((user) => UserViewDto.mapToView(user.n)),
+      items: users.map((user) => UserViewDto.mapToView(user.n, user.isFriend)),
     };
   }
 
@@ -52,7 +66,7 @@ export class UserQueryRepository {
     if (!userDocument) {
       return null;
     }
-    return UserViewDto.mapToView(userDocument);
+    return UserViewDto.mapToView(userDocument, false); // TODO: add isFriend
   }
 
   async findUserByLogin(login: string): Promise<any | null> {

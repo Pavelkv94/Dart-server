@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { db } from "../../../db/database";
-import { DatabaseAvailableLabels } from "../../../db/database.labels";
-import { UserNode } from "../domain/users.models";
+import { DatabaseAvailableLabels, DatabaseAvailableRelations } from "../../../db/database.labels";
+import { ContactActionType, ContactInputModel, UserNode } from "../domain/users.models";
 
 @injectable()
 export class UserRepository {
@@ -42,5 +42,29 @@ export class UserRepository {
   }
   async markUserAsDeleted(id: string): Promise<void> {
     await db.updateNodeByField(DatabaseAvailableLabels.USER, { id }, { deletedAt: new Date().toISOString() });
+  }
+
+  async setContactAction(user_id: string, actionBody: ContactInputModel): Promise<void> {
+    if (actionBody.action === ContactActionType.FOLLOW) {
+      db.connectNodes({
+        label1: DatabaseAvailableLabels.USER,
+        label2: DatabaseAvailableLabels.USER,
+        property1: "id",
+        value1: user_id,
+        property2: "id",
+        value2: actionBody.targetUserId,
+        relation: DatabaseAvailableRelations.FRIEND,
+      });
+    } else if (actionBody.action === ContactActionType.UNFOLLOW) {
+      await db.disconnectNodes({
+        label1: DatabaseAvailableLabels.USER,
+        label2: DatabaseAvailableLabels.USER,
+        property1: "id",
+        value1: user_id,
+        property2: "id",
+        value2: actionBody.targetUserId,
+        relation: DatabaseAvailableRelations.FRIEND,
+      });
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import { db } from "../../../db/database";
 import { DatabaseAvailableLabels, DatabaseAvailableRelations } from "../../../db/database.labels";
+import { log } from "console";
 
 @injectable()
 export class PostRepository {
@@ -17,7 +18,6 @@ export class PostRepository {
         value2: post.id,
         relation: DatabaseAvailableRelations.USER_POST,
       });
-
-    return response;
+    return response.id;
   }
 }

@@ -24,8 +24,8 @@ export class UserViewDto {
   linkedin: string;
   twitter: string;
   telegram: string;
-
-  constructor(model: UserNode) {
+  isFriend: boolean;
+  constructor(model: UserNode, isFriend: boolean) {
     this.id = model.id;
     this.login = model.login;
     this.email = model.email;
@@ -49,13 +49,10 @@ export class UserViewDto {
     this.linkedin = model.linkedin;
     this.twitter = model.twitter;
     this.telegram = model.telegram;
+    this.isFriend = isFriend;
   }
 
-  static mapToView(user: UserNode): UserViewDto {
-    return new UserViewDto(user);
-  }
-
-  static mapToViewArray(users: UserNode[]): UserViewDto[] {
-    return users.map((user) => this.mapToView(user));
+  static mapToView(user: UserNode, isFriend: boolean): UserViewDto {
+    return new UserViewDto(user, isFriend);
   }
 }

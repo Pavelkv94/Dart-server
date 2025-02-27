@@ -37,3 +37,6 @@ usersRouter.post(
   savePhotoToStorageMiddleware.single("image"),
   userController.uploadUserPhoto.bind(userController)
 );
+
+
+usersRouter.post("/set-contact-action", authAccessTokenMiddleware, userController.setContactAction.bind(userController));
