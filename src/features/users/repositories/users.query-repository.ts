@@ -9,7 +9,6 @@ export class UserQueryRepository {
   async findAllUsers(query: UsersValidInputQueryModel, user_id: string): Promise<any> {
     
     const { pageSize, pageNumber, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } = query;
-    console.log("user_id ", user_id);
     // const users = await db.findNodes("MATCH (n:USER) WHERE n.deletedAt IS NULL AND n.id <> $userId OPTIONAL MATCH (n)-[r:FRIEND]->(f:USER {id: $userId}) RETURN n, r", {
     //   userId: user_id,
     // });

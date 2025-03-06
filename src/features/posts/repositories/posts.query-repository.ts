@@ -103,6 +103,10 @@ export class PostQueryRepository {
   async _getPostView(posts: any[], userInfo?: any) {
     return Promise.all(
       posts.map(async (p) => {
+        // If userInfo is provided, use it; otherwise, use p.u (for getAllPosts)
+
+        const user = userInfo || p.u;
+
         const comments = await db.findNodes(
           `
           MATCH (p:${DatabaseAvailableLabels.POST})-[:${DatabaseAvailableRelations.POST_COMMENT}]->(c:${DatabaseAvailableLabels.COMMENT})
@@ -124,21 +128,38 @@ export class PostQueryRepository {
                 user_id: c.c.commentator_id,
               }
             );
+
+            const commentLikes = await db.findNodes(
+              `
+              MATCH (p:${DatabaseAvailableLabels.COMMENT} {id: $commentId})-[:${DatabaseAvailableRelations.COMMENT_LIKE}]->(l:${DatabaseAvailableLabels.LIKE})
+              RETURN l
+              `,
+              { commentId: c.c.id }
+            );
+
             return {
               ...c.c,
               user: { photo: users[0].u.photo, first_name: users[0].u.first_name, last_name: users[0].u.last_name },
+              likesCount: commentLikes.filter((l) => l.l.like_status === "Like").length,
+              isILiked: commentLikes.filter((l) => l.l.like_status === "Like" && l.l.user_id === user.id).length > 0,
             };
           })
         );
 
-        // If userInfo is provided, use it; otherwise, use p.u (for getAllPosts)
-        const user = userInfo || p.u;
+        const postLikes = await db.findNodes(
+          `
+          MATCH (p:${DatabaseAvailableLabels.POST} {id: $postId})-[:${DatabaseAvailableRelations.POST_LIKE}]->(l:${DatabaseAvailableLabels.LIKE})
+          RETURN l
+          `,
+          { postId: p.n.id }
+        );
 
         return {
           ...p.n,
           user: { photo: user.photo, first_name: user.first_name, last_name: user.last_name },
-          likes: [],
           comments: commentPromises,
+          likesCount: postLikes.filter((l) => l.l.like_status === "Like").length,
+          isILiked: postLikes.filter((l) => l.l.like_status === "Like" && l.l.user_id === user.id).length > 0,
         };
       })
     );

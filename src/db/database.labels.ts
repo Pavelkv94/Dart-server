@@ -5,6 +5,7 @@ export enum DatabaseAvailableLabels {
   API_LOG = "API_LOG",
   COMMENT = "COMMENT",
   MESSAGE = "MESSAGE",
+  LIKE = "LIKE"
 }
 
 export enum DatabaseAvailableRelations {
@@ -14,4 +15,7 @@ export enum DatabaseAvailableRelations {
   USER_COMMENT = "USER_COMMENT",
   POST_COMMENT = "POST_COMMENT",
   USER_MESSAGE = "USER_MESSAGE",
+  POST_LIKE = "POST_LIKE",
+  COMMENT_LIKE = "COMMENT_LIKE",
+  USER_LIKE = "USER_LIKE",
 }

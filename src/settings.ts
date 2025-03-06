@@ -1,7 +1,7 @@
 export const SETTINGS = {
   PATH: {
     MESSAGES: "/messages",
-    // BLOGS: "/blogs",
+    LIKE: "/like",
     POSTS: "/posts",
     TESTING: "/testing",
     USERS: "/users",

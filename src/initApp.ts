@@ -16,6 +16,7 @@ import { messagesRouter } from "./features/messages/messages.router";
 import { WebSocketService } from "./adapters/webocket.service";
 import { container } from "./composition.root";
 import { MessagesRepository } from "./features/messages/repositories/messages.repository";
+import { likesRouter } from "./features/likes/likes.router";
 
 export const initApp = () => {
   const app = express();
@@ -40,8 +41,9 @@ export const initApp = () => {
   app.use(SETTINGS.PATH.USERS, usersRouter);
   app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
   app.use(SETTINGS.PATH.SECURITY, securityDevicesRouter);
-
+  
   app.use(SETTINGS.PATH.TESTING, testingRouter);
+  app.use(SETTINGS.PATH.LIKE, likesRouter);
 
   app.use(errorHandlerMiddleware);
 

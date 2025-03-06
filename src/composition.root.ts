@@ -27,6 +27,9 @@ import { MessagesQueryRepository } from "./features/messages/repositories/messag
 import { MessagesController } from "./features/messages/messages.controller";
 import { WebSocketService } from "./adapters/webocket.service";
 import { MessagesRepository } from "./features/messages/repositories/messages.repository";
+import { LikesRepository } from "./features/likes/likes.repository";
+import { LikesController } from "./features/likes/likes.controller";
+import { LikesService } from "./features/likes/likes.service";
 
 export const container = new Container();
 
@@ -64,6 +67,19 @@ container.bind(MessagesQueryRepository).to(MessagesQueryRepository);
 container.bind(MessagesController).to(MessagesController);
 container.bind(MessagesRepository).to(MessagesRepository);
 
+container.bind(LikesController).to(LikesController);
+container.bind(LikesService).to(LikesService);
+container.bind(LikesRepository).to(LikesRepository);    
+
+
+
 container.bind(WebSocketService).to(WebSocketService);
-// container.bind(LikeService).to(LikeService);
-// container.bind(LikeRepository).to(LikeRepository);
+    
+
+
+
+
+
+
+
+
