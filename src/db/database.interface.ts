@@ -271,13 +271,13 @@ export class Database {
     }
   }
 
-  async deleteNode(query: string, params: Record<string, any>) {
+  async runNativeQuery(query: string, params: Record<string, any>) {
     const session = this.getSession();
     try {
       await session.run(query, params);
     } catch (error: any) {
-      console.error("Error delete node:", error);
-      throw new Error(`Failed to delete node: ${error.message}`);
+      console.error("Error run native query:", error);
+      throw new Error(`Failed to run native query: ${error.message}`);
     } finally {
       await session.close();
     }

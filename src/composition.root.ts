@@ -19,6 +19,14 @@ import { PostController } from "./features/posts/posts.controller";
 import { PostQueryRepository } from "./features/posts/repositories/posts.query-repository";
 import { ApiLogsService } from "./features/apiLogs/apiLogs.service";
 import { ApiLogsRepository } from "./features/apiLogs/apiLogs.repository";
+import { CommentsRepository } from "./features/comments/repositories/comments.repository";
+import { CommentsQueryRepository } from "./features/comments/repositories/comments.query-repository";
+import { CommentsService } from "./features/comments/comments.service";
+import { CommentsController } from "./features/comments/comments.controller";
+import { MessagesQueryRepository } from "./features/messages/repositories/messages.query-repository";
+import { MessagesController } from "./features/messages/messages.controller";
+import { WebSocketService } from "./adapters/webocket.service";
+import { MessagesRepository } from "./features/messages/repositories/messages.repository";
 
 export const container = new Container();
 
@@ -39,11 +47,6 @@ container.bind(UserQueryRepository).to(UserQueryRepository);
 container.bind(UserService).to(UserService);
 container.bind(UserController).to(UserController);
 
-// container.bind(BlogRepository).to(BlogRepository);
-// container.bind(BlogQueryRepository).to(BlogQueryRepository);
-// container.bind(BlogService).to(BlogService);
-// container.bind(BlogController).to(BlogController);
-
 container.bind(PostRepository).to(PostRepository);
 container.bind(PostQueryRepository).to(PostQueryRepository);
 container.bind(PostService).to(PostService);
@@ -52,10 +55,15 @@ container.bind(PostController).to(PostController);
 container.bind(ApiLogsService).to(ApiLogsService);
 container.bind(ApiLogsRepository).to(ApiLogsRepository);
 
-// container.bind(CommentRepository).to(CommentRepository);
-// container.bind(CommentQueryRepository).to(CommentQueryRepository);
-// container.bind(CommentService).to(CommentService);
-// container.bind(CommentController).to(CommentController);
+container.bind(CommentsRepository).to(CommentsRepository);
+container.bind(CommentsQueryRepository).to(CommentsQueryRepository);
+container.bind(CommentsService).to(CommentsService);
+container.bind(CommentsController).to(CommentsController);
 
+container.bind(MessagesQueryRepository).to(MessagesQueryRepository);
+container.bind(MessagesController).to(MessagesController);
+container.bind(MessagesRepository).to(MessagesRepository);
+
+container.bind(WebSocketService).to(WebSocketService);
 // container.bind(LikeService).to(LikeService);
 // container.bind(LikeRepository).to(LikeRepository);

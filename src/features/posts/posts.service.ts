@@ -19,4 +19,8 @@ export class PostService {
     }
     return this.postRepository.createPost(newPost);
   }
+
+  deletePost(post_id: string) {
+    return this.postRepository.deletePost(post_id);
+  }
 }

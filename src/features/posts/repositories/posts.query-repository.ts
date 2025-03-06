@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { db } from "../../../db/database";
 import { int } from "neo4j-driver";
-import { DatabaseAvailableLabels } from "../../../db/database.labels";
+import { DatabaseAvailableLabels, DatabaseAvailableRelations } from "../../../db/database.labels";
 
 @injectable()
 export class PostQueryRepository {
@@ -9,18 +9,16 @@ export class PostQueryRepository {
     const skip = Math.floor((Number(page) - 1) * Number(pageSize));
     const limit = Math.floor(Number(pageSize));
 
-    const posts = await db.findNodes("MATCH (n:POST) WHERE n.deletedAt IS NULL ORDER BY n.createdAt DESC SKIP $skip LIMIT $limit MATCH (u:USER) WHERE u.id = n.user_id RETURN n, u", {
-      skip: int(skip),
-      limit: int(limit),
-    });
+    const posts = await db.findNodes(
+      "MATCH (n:POST) WHERE n.deletedAt IS NULL ORDER BY n.createdAt DESC SKIP $skip LIMIT $limit MATCH (u:USER) WHERE u.id = n.user_id RETURN n, u",
+      {
+        skip: int(skip),
+        limit: int(limit),
+      }
+    );
 
-    const postsView = posts.map((p) => ({
-      ...p.n,
-      user: { photo: p.u.photo, first_name: p.u.first_name, last_name: p.u.last_name },
-      likes: [],
-      comments: [],
-    }));
-    
+    const postsView = await this._getPostView(posts);
+
     const countResult = await db.getDefaultNodesCount(DatabaseAvailableLabels.POST, {});
 
     return {
@@ -35,12 +33,15 @@ export class PostQueryRepository {
   async getUserPosts(user_id: string, page: string, pageSize: string) {
     const skip = Math.floor((Number(page) - 1) * Number(pageSize));
     const limit = Math.floor(Number(pageSize));
-    
-    const posts = await db.findNodes("MATCH (n:POST) WHERE n.deletedAt IS NULL AND n.user_id = $user_id ORDER BY n.createdAt DESC RETURN n SKIP $skip LIMIT $limit", {
-      user_id: user_id,
-      skip: int(skip),
-      limit: int(limit),
-    });
+
+    const posts = await db.findNodes(
+      "MATCH (n:POST) WHERE n.deletedAt IS NULL AND n.user_id = $user_id ORDER BY n.createdAt DESC RETURN n SKIP $skip LIMIT $limit",
+      {
+        user_id: user_id,
+        skip: int(skip),
+        limit: int(limit),
+      }
+    );
 
     const users = await db.findNodes(
       `
@@ -53,12 +54,7 @@ export class PostQueryRepository {
       }
     );
 
-    const postsView = posts.map((p) => ({
-      ...p.n,
-      user: { photo: users[0].u.photo, first_name: users[0].u.first_name, last_name: users[0].u.last_name },
-      likes: [],
-      comments: [],
-    }));
+    const postsView = await this._getPostView(posts, users[0].u);
 
     const countResult = await db.findNodesTotalCountWithOptionalQuery(
       `
@@ -102,5 +98,49 @@ export class PostQueryRepository {
     };
 
     return postView;
+  }
+
+  async _getPostView(posts: any[], userInfo?: any) {
+    return Promise.all(
+      posts.map(async (p) => {
+        const comments = await db.findNodes(
+          `
+          MATCH (p:${DatabaseAvailableLabels.POST})-[:${DatabaseAvailableRelations.POST_COMMENT}]->(c:${DatabaseAvailableLabels.COMMENT})
+          WHERE p.id = $postId
+          RETURN c
+          `,
+          { postId: p.n.id }
+        );
+
+        const commentPromises = await Promise.all(
+          comments.map(async (c) => {
+            const users = await db.findNodes(
+              `
+              MATCH (u:USER)
+              WHERE u.id = $user_id
+              RETURN u
+              `,
+              {
+                user_id: c.c.commentator_id,
+              }
+            );
+            return {
+              ...c.c,
+              user: { photo: users[0].u.photo, first_name: users[0].u.first_name, last_name: users[0].u.last_name },
+            };
+          })
+        );
+
+        // If userInfo is provided, use it; otherwise, use p.u (for getAllPosts)
+        const user = userInfo || p.u;
+
+        return {
+          ...p.n,
+          user: { photo: user.photo, first_name: user.first_name, last_name: user.last_name },
+          likes: [],
+          comments: commentPromises,
+        };
+      })
+    );
   }
 }

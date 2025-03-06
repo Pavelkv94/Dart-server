@@ -39,7 +39,7 @@ export class SecurityDeviceRepository {
     const query = `MATCH (n:${DatabaseAvailableLabels.SECURITY_DEVICE})
       WHERE n.user_id = $user_id AND n.device_id <> $device_id
       DETACH DELETE n`;
-    await db.deleteNode(query, { device_id, user_id });
+    await db.runNativeQuery(query, { device_id, user_id });
   }
   async deleteDevice(device_id: string, user_id: string): Promise<void> {
 

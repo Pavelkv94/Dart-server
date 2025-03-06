@@ -39,4 +39,20 @@ export class PostController {
       return next(ApiError.UnexpectedError(error as Error));
     }
   }
+
+  async deletePost(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      const post = await this.postQueryRepository.getPostById(req.params.id);
+      if (!post) {
+        return next(ApiError.NotFound("Post not found"));
+      }
+      if (post.user_id !== req.user.id) {
+        return next(ApiError.Forbidden("You are not allowed to delete this post"));
+      }
+      await this.postService.deletePost(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
 }

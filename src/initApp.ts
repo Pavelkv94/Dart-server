@@ -4,7 +4,6 @@ import { HTTP_STATUSES } from "./types/enums";
 import cookieParser from "cookie-parser";
 import { config } from "dotenv";
 import { SETTINGS } from "./settings";
-import { Database } from "./db/database.interface";
 import { authRouter } from "./features/auth/auth.router";
 import { testingRouter } from "./features/testing/testing.router";
 import { usersRouter } from "./features/users/users.router";
@@ -12,18 +11,11 @@ import { errorHandlerMiddleware } from "./global-middlewares/error-handler.middl
 import { securityDevicesRouter } from "./features/securityDevices/securityDevices.router";
 import path from "path";
 import { postsRouter } from "./features/posts/posts.router";
-
-// import { SETTINGS } from "./settings";
-// import { postsRouter } from "./features/posts/posts.router";
-// import { blogsRouter } from "./features/blogs/blogs.router";
-// import { usersRouter } from "./features/users/api/users.router";
-// import { testingRouter } from "./features/testing/testing.router";
-// import { authRouter } from "./features/auth/auth.router";
-// import { commentsRouter } from "./features/comments/comments.router";
-// import { errorHandlerMiddleware } from "./global-middlewares/error-handler.middleware";
-// import { HTTP_STATUSES } from "./types/common-types";
-// import cookieParser from "cookie-parser";
-// import { securityDevicesRouter } from "./features/securityDevices/securityDevices.router";
+import { commentsRouter } from "./features/comments/comments.router";
+import { messagesRouter } from "./features/messages/messages.router";
+import { WebSocketService } from "./adapters/webocket.service";
+import { container } from "./composition.root";
+import { MessagesRepository } from "./features/messages/repositories/messages.repository";
 
 export const initApp = () => {
   const app = express();
@@ -43,15 +35,17 @@ export const initApp = () => {
   app.use("/storage", express.static(path.join(__dirname, "../storage")));
 
   app.use(SETTINGS.PATH.AUTH, authRouter);
-  // app.use(SETTINGS.PATH.BLOGS, blogsRouter);
+  app.use(SETTINGS.PATH.MESSAGES, messagesRouter);
   app.use(SETTINGS.PATH.POSTS, postsRouter);
   app.use(SETTINGS.PATH.USERS, usersRouter);
-  // app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
+  app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
   app.use(SETTINGS.PATH.SECURITY, securityDevicesRouter);
 
   app.use(SETTINGS.PATH.TESTING, testingRouter);
 
   app.use(errorHandlerMiddleware);
+
+  new WebSocketService(Number(process.env.WS_PORT), container.get(MessagesRepository));
 
   return app;
 };

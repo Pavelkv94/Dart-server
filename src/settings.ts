@@ -1,11 +1,12 @@
 export const SETTINGS = {
   PATH: {
+    MESSAGES: "/messages",
     // BLOGS: "/blogs",
     POSTS: "/posts",
     TESTING: "/testing",
     USERS: "/users",
     AUTH: "/auth",
-    // COMMENTS: "/comments",
+    COMMENTS: "/comments",
     SECURITY: "/security"
   },
   ADMIN: process.env.ADMIN || "admin:qwerty",
