@@ -7,7 +7,6 @@ import { JwtService } from "../../../adapters/jwt/jwt.service";
 export const authAccessTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const jwtService = container.resolve(JwtService);
   const userQueryRepository = container.resolve(UserQueryRepository);
-
   if (!req.headers.authorization) {
     return next(ApiError.Unauthorized("Unauthorized"));
   }

@@ -30,6 +30,7 @@ import { MessagesRepository } from "./features/messages/repositories/messages.re
 import { LikesRepository } from "./features/likes/likes.repository";
 import { LikesController } from "./features/likes/likes.controller";
 import { LikesService } from "./features/likes/likes.service";
+import { StorageService } from "./adapters/storage.service";
 
 export const container = new Container();
 
@@ -71,7 +72,7 @@ container.bind(LikesController).to(LikesController);
 container.bind(LikesService).to(LikesService);
 container.bind(LikesRepository).to(LikesRepository);    
 
-
+container.bind(StorageService).to(StorageService);
 
 container.bind(WebSocketService).to(WebSocketService);
     

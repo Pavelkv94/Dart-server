@@ -9,7 +9,7 @@ import { UserController } from "./users.controller";
 import { userBodyValidators } from "./middlewares/user-body.validator";
 import { findUserMiddleware } from "./middlewares/findUser.middleware";
 import { authAccessTokenMiddleware } from "../auth/middlewares/auth-accessToken.middleware";
-import { savePhotoToStorageMiddleware } from "./middlewares/savePhotoToStorage.middleware";
+import { upload } from "./middlewares/upload.middleware";
 export const usersRouter = Router();
 
 const userController = container.resolve(UserController);
@@ -33,9 +33,16 @@ usersRouter.post(
   "/uploadPhoto",
   authAccessTokenMiddleware,
   findUserMiddleware,
-  //@ts-ignore
-  savePhotoToStorageMiddleware.single("image"),
+  upload.single("file"),
   userController.uploadUserPhoto.bind(userController)
+);
+
+usersRouter.post(
+  "/uploadBackground",
+  authAccessTokenMiddleware,
+  findUserMiddleware,
+  upload.single("file"),
+  userController.uploadUserBackground.bind(userController)
 );
 
 

@@ -1,0 +1,24 @@
+services:
+  dart_neo4j:
+    image: neo4j:latest
+    container_name: dart_neo4j
+    ports:
+      - "7474:7474"  # HTTP access
+      - "7687:7687"  # Bolt access
+    volumes:
+      - dart_neo4j_data:/data
+      - dart_neo4j_logs:/logs
+      - dart_neo4j_import:/import
+      - dart_neo4j_plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/password    # Replace 'test' with your password
+      - NEO4J_dbms_default__listen__address=0.0.0.0
+      - NEO4J_dbms_memory_pagecache_size=2G # Example memory configuration
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    restart: unless-stopped
+    
+volumes:
+  dart_neo4j_data:
+  dart_neo4j_logs:
+  dart_neo4j_import:
+  dart_neo4j_plugins:

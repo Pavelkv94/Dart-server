@@ -10,7 +10,7 @@ import { AuthService } from "../auth/auth.service";
 
 @injectable()
 export class UserController {
-  constructor(public userService: UserService, public userQueryRepository: UserQueryRepository, public authService: AuthService) {}
+  constructor(public userService: UserService, public userQueryRepository: UserQueryRepository, public authService: AuthService) { }
 
   async getUsers(req: Request<{}, {}, {}, UsersInputQueryModel>, res: Response<OutputDataWithPagination<UserViewModel>>, next: NextFunction) {
     try {
@@ -68,12 +68,34 @@ export class UserController {
     }
   }
 
-  async uploadUserPhoto(req: Request<{}, {}, { image: any }>, res: Response, next: NextFunction) {
+  async uploadUserPhoto(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.file) {
-        const filePath = `/storage/${req.user.id}${req.file.originalname.slice(-4)}`;
-        await this.userService.updateUser(req.user.id, { photo: filePath });
-        res.status(200).json({ photoUrl: filePath });
+      const user = await this.userQueryRepository.findUserById(req.user.id);
+      if (!user) {
+        return next(ApiError.NotFound("The requested user was not found"));
+      }
+      const file = req.file;
+      if (file) {
+        const filename = await this.userService.uploadUserPhoto(user, file);
+        res.status(200).json({ filename });
+      } else {
+        return next(ApiError.BadRequest("Ошибка загрузки файла"));
+      }
+    } catch (error) {
+      return next(ApiError.UnexpectedError(error as Error));
+    }
+  }
+
+  async uploadUserBackground(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await this.userQueryRepository.findUserById(req.user.id);
+      if (!user) {
+        return next(ApiError.NotFound("The requested user was not found"));
+      }
+      const file = req.file;
+      if (file) {
+        const filename = await this.userService.uploadUserBackground(user, file);
+        res.status(200).json({ filename });
       } else {
         return next(ApiError.BadRequest("Ошибка загрузки файла"));
       }

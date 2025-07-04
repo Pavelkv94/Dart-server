@@ -13,43 +13,25 @@ export class UserQueryRepository {
     //   userId: user_id,
     // });
 
-    const users = await db.findNodesWithRelation(`
-      MATCH (cu:USER {id: $userId})
-      MATCH (n:USER)
-      WHERE n.deletedAt IS NULL AND n.id <> $userId
-      OPTIONAL MATCH (cu)-[r:FRIEND]-(n)
-      RETURN n, CASE WHEN r IS NOT NULL THEN true ELSE false END AS isFriend
+    // const users = await db.findNodesWithRelation(`
+    //   MATCH (cu:USER {id: $userId})
+    //   MATCH (n:USER)
+    //   WHERE n.deletedAt IS NULL AND n.id <> $userId
+    //   OPTIONAL MATCH (cu)-[r:FRIEND]-(n)
+    //   RETURN n, CASE WHEN r IS NOT NULL THEN true ELSE false END AS isFriend
+    //   `, {
+    //   userId: user_id,
+    // });
+
+    const users = await db.findNodes(`
+      MATCH (n:USER) RETURN n
       `, {
       userId: user_id,
     });
 
-    
+    console.log(users);
+
     const usersCount = await db.getDefaultNodesCount(DatabaseAvailableLabels.USER, {});
-
-    // return users;
-    // let filter: any = {
-    //   $or: [],
-    // };usersCount
-
-    // if (searchLoginTerm) {
-    //   filter.$or.push({ login: { $regex: searchLoginTerm, $options: "i" } });
-    // }
-    // if (searchEmailTerm) {
-    //   filter.$or.push({ email: { $regex: searchEmailTerm, $options: "i" } });
-    // }
-
-    // if (filter.$or.length === 0) {
-    //   filter = {};
-    // }
-
-    // const usersFromDb = await UserModel.find(filter)
-    //   .skip((pageNumber - 1) * pageSize)
-    //   .limit(pageSize)
-    //   .sort({ [sortBy]: sortDirection });
-
-    // const usersView = UserViewDto.mapToViewArray(usersFromDb);
-
-    // const usersCount = await this.getUsersCount(searchLoginTerm, searchEmailTerm);
 
     return {
       pagesCount: Math.ceil(usersCount.low / query.pageSize),
