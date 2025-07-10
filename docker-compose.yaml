@@ -29,7 +29,7 @@ services:
     depends_on:
       - dart_neo4j
     volumes:
-      - .:/usr/src/app
+      - .:/app
     networks:
       - dart_network
     restart: unless-stopped
