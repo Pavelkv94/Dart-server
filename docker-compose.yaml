@@ -6,6 +6,7 @@ services:
     container_name: dart_server
     ports:
       - "5006:5000"
+      - "5050:5050"
     environment:
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
