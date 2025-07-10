@@ -1,4 +1,38 @@
 services:
+  dart_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dart_server
+    ports:
+      - "5006:5000"
+    environment:
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - PORT=${PORT}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - WS_PORT=${WS_PORT}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_USERPASS=${DB_USERPASS}
+      - ADMIN=${ADMIN}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION}
+    depends_on:
+      - dart_neo4j
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - dart_network
+    restart: unless-stopped
+
   dart_neo4j:
     image: neo4j:latest
     container_name: dart_neo4j
@@ -15,6 +49,8 @@ services:
       - NEO4J_dbms_default__listen__address=0.0.0.0
       - NEO4J_dbms_memory_pagecache_size=2G # Example memory configuration
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    networks:
+      - dart_network
     restart: unless-stopped
     
 volumes:
@@ -22,3 +58,6 @@ volumes:
   dart_neo4j_logs:
   dart_neo4j_import:
   dart_neo4j_plugins:
+
+networks:
+  dart_network:

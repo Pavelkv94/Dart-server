@@ -6,7 +6,10 @@
   "scripts": {
     "watch": "tsc -w",
     "dev": "yarn nodemon --inspect dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "seed": "ts-node src/db/seed/database.seed.ts",
+    "seed:prod": "node dist/db/seed/database.seed.js",
     "jest": "jest -i",
     "jest:coverage": "jest -i --coverage"
   },
