@@ -30,6 +30,7 @@ services:
       - dart_neo4j
     volumes:
       - .:/app
+      - /app/dist
     networks:
       - dart_network
     restart: unless-stopped
